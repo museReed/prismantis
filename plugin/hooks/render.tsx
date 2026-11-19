@@ -1548,7 +1548,7 @@ export const renderBlocks = (el: ElementTable, style: Style, blocks: Block[], co
       needs: reserved(kept),
       marker: (
         <Box flexShrink={0} alignSelf={low ? 'flex-end' : 'flex-start'} hover={{ scope }}>
-          <Text dimColor>⧉</Text>
+          <Text dimColor>📋</Text>
           <Box position="absolute" {...(low ? { bottom: 0 } : { top: 0 })} {...(start ? { left: 0 } : { right: 0 })} display="none" hover={{ scope, display: 'flex' }}>{kept.flatMap((button, i) => (i ? [<Text key={`gap${i}`}> </Text>, button] : [button]))}</Box>
         </Box>
       ),
@@ -1560,10 +1560,10 @@ export const renderBlocks = (el: ElementTable, style: Style, blocks: Block[], co
     const text = hover && holdsOnlyEmptyCode(block) ? undefined : blockSource(style, blocks, b)
     const isPlainCode = block.kind === 'code' && !drawn.get(b)?.element
     const { art, grid, hues } = artsOf(drawn.get(b), block, style.theme, rtlTables[b]!)
-    const first = text === undefined || isPlainCode ? null : copy?.(text, `copy${b}`, block.kind === 'table' ? '⧉ md' : art === undefined ? undefined : '⧉ source')
-    const second = first && art !== undefined ? copy?.(art, `art${b}`, '⧉ art') : null
-    const html = first && block.kind === 'table' ? copy?.(() => tableText(block), `html${b}`, '⧉ html', () => tableHtml(block, rtlTables[b])) : null
-    return { first, second, html, png: second && copy?.(grid!, `png${b}`, '▣ png', 'png', hues) }
+    const first = text === undefined || isPlainCode ? null : copy?.(text, `copy${b}`, block.kind === 'table' ? '📝 md' : art === undefined ? undefined : '📜 source')
+    const second = first && art !== undefined ? copy?.(art, `art${b}`, '🎨 art') : null
+    const html = first && block.kind === 'table' ? copy?.(() => tableText(block), `html${b}`, '🌐 html', () => tableHtml(block, rtlTables[b])) : null
+    return { first, second, html, png: second && copy?.(grid!, `png${b}`, '📸 png', 'png', hues) }
   })
   const codeHead = (label: string, button: RenderElement | null, shell: number) => {
     if (!hover || !button) return null

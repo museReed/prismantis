@@ -543,7 +543,7 @@ test("a typeset formula gets the usual copy button, and it copies the formula's 
 
   const ui = await $.ui.mount(reply(REPLY))
   await clock.settle()
-  const buttons = (await ui.findAll({ type: 'Button' })).filter(b => b.props.label === '⧉ copy')
+  const buttons = (await ui.findAll({ type: 'Button' })).filter(b => b.props.label === '📋 copy')
   expect(await ui.find({ type: 'Image' })).toBeDefined()
   expect(buttons).toHaveLength(1)
   await ui.press({ key: String(buttons[0]?.key) })

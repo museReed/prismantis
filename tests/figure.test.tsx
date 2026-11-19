@@ -352,8 +352,8 @@ test('a figure offers its source and its drawn text as copies', async ($, on) =>
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount(reply(ROLES, surface))
     const labels = (await ui.findAll({ type: 'Button' })).map(button => button.props.label)
-    expect(labels).toContain('⧉ source')
-    expect(labels).toContain('⧉ art')
+    expect(labels).toContain('📜 source')
+    expect(labels).toContain('🎨 art')
     await ui.unmount()
   }
 })
@@ -535,7 +535,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
       return { value: { isCopied: true as const } }
     })
     const ui = await $.ui.mount(reply(['```figure', '{accent:┌──┐} plain {warn:break}', '{ok:done}', '```'].join('\n'), surface))
-    const art = (await ui.findAll({ type: 'Button' })).find(button => button.props.label === '⧉ art')
+    const art = (await ui.findAll({ type: 'Button' })).find(button => button.props.label === '🎨 art')
     await ui.press({ key: art!.key! })
     expect(copied).toEqual(['┌──┐ plain break\ndone'])
     await ui.unmount()

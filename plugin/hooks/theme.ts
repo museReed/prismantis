@@ -101,6 +101,11 @@ const isColor = (value: unknown): value is string => typeof value === 'string' &
 
 export const longHex = (color: string): string => color.replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/i, '#$1$1$2$2$3$3')
 
+export const terminalBackground = (value: unknown): string | undefined => {
+  const hex = typeof value === 'string' ? value.trim().replace(/^#?/, '#') : ''
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex) ? longHex(hex).toLowerCase() : undefined
+}
+
 const SURFACES: RenderSurface[] = ['terminal', 'desktop', 'vscode', 'mobile']
 
 const surfacesOf = (value: unknown): RenderSurface[] | undefined => {
@@ -126,10 +131,11 @@ export const resolveStyle = (options: PluginOptions): Style => {
   )
 
   const rtl = pick(options.rtl, ['auto', 'off', ...(Object.keys(TERMINALS) as Terminal[])], 'auto')
+  const background = terminalBackground(options.terminalBackgroundColor) ?? PRESET_BACKGROUNDS[preset]
 
   return {
     theme: { ...base, ...fromFields },
-    ...(PRESET_BACKGROUNDS[preset] ? { background: PRESET_BACKGROUNDS[preset] } : {}),
+    ...(background ? { background } : {}),
     desktopColors: pick(options.desktopColors, ['off', 'match'] as const, 'off'),
     headingStyle: pick(options.headingStyle, ['bold', 'underline', 'uppercase', 'banner'] as const, 'banner'),
     tableStyle: pick(options.tableStyle, ['box', 'rules', 'grid', 'minimal'] as const, 'box'),

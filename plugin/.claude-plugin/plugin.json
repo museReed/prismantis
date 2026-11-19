@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0",
+  "version": "0.49.0-muse.1",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -489,10 +489,16 @@
       "description": "Frame and ⬤ Claude label of Claude's replies with replyStyle bubble or framed. Hex, rgb(), ansi256() or a name. Empty uses Claude Code's own Claude orange.",
       "default": ""
     },
+    "terminalBackgroundColor": {
+      "type": "string",
+      "title": "Terminal background",
+      "description": "Your terminal's background as hex (#04241f), so bubble, code and button fills are shaded from it instead of the theme's own background. Empty uses the theme's background.",
+      "default": ""
+    },
     "pngBackgroundColor": {
       "type": "string",
       "title": "png copy background",
-      "description": "Background of the ▣ png copy of tables, diagrams and figures. Hex, rgb(), ansi256() or a name. Empty uses the theme's background, white when the theme has none. Set it to your terminal's background to paste what you see.",
+      "description": "Background of the 📸 png copy of tables, diagrams and figures. Hex, rgb(), ansi256() or a name. Empty uses the theme's background, white when the theme has none. Set it to your terminal's background to paste what you see.",
       "default": ""
     },
     "diffStyle": {
@@ -538,7 +544,7 @@
     "copyButtonStyle": {
       "type": "string",
       "title": "Copy button style",
-      "description": "dim: bare ⧉ labels beside or above each block, drawn dim and at full strength under the pointer or the focus. inline: the same buttons in the accent color. hover: each block shows a dim ⧉ beside its first row, and the reply one in its bottom-right corner; the pointer on a ⧉ draws its buttons over it, so they take no line; ctrl+x tab does not reach them, and the mobile app, which has no pointer, shows them inline. Needs copyButtons on.",
+      "description": "dim: bare 📋 labels beside or above each block, drawn dim and at full strength under the pointer or the focus. inline: the same buttons in the accent color. hover: each block shows a dim 📋 beside its first row, and the reply one in its bottom-right corner; the pointer on a 📋 draws its buttons over it, so they take no line; ctrl+x tab does not reach them, and the mobile app, which has no pointer, shows them inline. Needs copyButtons on.",
       "default": "dim",
       "options": ["dim", "inline", "hover"]
     },

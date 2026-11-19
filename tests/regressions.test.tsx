@@ -437,8 +437,8 @@ test('the help screen shows every element prismantis draws', async () => {
   expect(showcaseText(Object.keys(PRESETS))).toContain('`listMarker` to dash in')
   expect(showcaseText(Object.keys(PRESETS))).toContain('`bubbleLabels`')
   expect(helpText([])).toContain('bubble labels')
-  expect(showcaseText([])).toContain('⧉ html')
-  expect(showcaseText([])).toContain('`▣ png`')
+  expect(showcaseText([])).toContain('🌐 html')
+  expect(showcaseText([])).toContain('`📸 png`')
   expect(showcaseText([])).toContain('src/app.ts:42, and Windows paths like C:\\work\\plan.md')
   expect(showcaseText([])).toContain('`fullPaths` in `/config`')
   expect(showcaseText([])).toContain('<i>Reply</i>')
@@ -482,7 +482,7 @@ test('the help screen shows every element prismantis draws', async () => {
   expect(showcaseText([])).toContain('copyButtonStyle')
   expect(showcaseText([])).toContain('textCopyButtons')
   expect(showcaseText([])).toContain('sectionCopyButtons')
-  expect(showcaseText([])).toContain('each block shows a dim ⧉ instead: point at it for its buttons')
+  expect(showcaseText([])).toContain('each block shows a dim 📋 instead: point at it for its buttons')
   expect(showcaseText([])).toContain('+M more lines')
   expect(showcaseText([])).toContain('```figure')
   expect(showcaseText([])).toContain('lined up with its corner')
@@ -654,7 +654,7 @@ test('copy reply copies the whole reply as written, Hebrew in reading order', { 
   const copied = stubClipboard(on)
   const text = 'שלום חברים, זו הדגמה של prismantis.\n\n| a | b |\n|---|---|\n| 1 | 2 |'
   const ui = await $.ui.mount(mount(text))
-  const reply = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '⧉ copy reply')
+  const reply = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '💬 copy reply')
   await ui.press({ key: reply!.key! })
   expect(copied).toEqual([text])
   await ui.unmount()
@@ -665,7 +665,7 @@ test('copy reply copies a reply past the text cap whole', async ($, on) => {
   const text = `List:\n\n${Array.from({ length: 3000 }, (_, i) => `- item ${i} with \`code\` and **bold**`).join('\n')}\n\nTAIL MARKER`
   const ui = await $.ui.mount(mount(text))
   expect(await ui.find({ type: 'Text', text: /TAIL MARKER/ })).toBeUndefined()
-  const reply = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '⧉ copy reply')
+  const reply = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '💬 copy reply')
   await ui.press({ key: reply!.key! })
   expect(copied).toEqual([text])
   await ui.unmount()
@@ -673,7 +673,7 @@ test('copy reply copies a reply past the text cap whole', async ($, on) => {
 
 test('a one-paragraph English block gets no copy reply button', async $ => {
   const ui = await $.ui.mount(mount('Checking the tests next.'))
-  expect((await ui.findAll({ type: 'Button' })).some(b => b.props.label === '⧉ copy reply')).toBe(false)
+  expect((await ui.findAll({ type: 'Button' })).some(b => b.props.label === '💬 copy reply')).toBe(false)
   await ui.unmount()
 })
 
@@ -1297,7 +1297,7 @@ test('copy reply copies paths as written', async ($, on) => {
   const copied = recordCopies(on)
   if (!(await linksHttp($.ui.mount(mount('[/x.md](file:///x.md)'))))) return
   const ui = await $.ui.mount(mount(PATHS))
-  const reply = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '⧉ copy reply')
+  const reply = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '💬 copy reply')
   await ui.press({ key: reply!.key! })
   expect(copied).toEqual([PATHS])
   await ui.unmount()
@@ -1545,7 +1545,7 @@ test('copying a table keeps its links as written', async ($, on) => {
   const copied = stubClipboard(on)
   const source = '| who | site |\n|---|---|\n| [mail](mailto:someone@example.com) | [docs](https://example.com) |'
   const ui = await $.ui.mount(mount(source))
-  const button = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '⧉ md')
+  const button = (await ui.findAll({ type: 'Button' })).find(b => b.props.label === '📝 md')
   await ui.press({ key: button!.key! })
   expect(copied).toEqual([source])
   await ui.unmount()
@@ -2615,7 +2615,7 @@ for (const surface of ['terminal', 'desktop'] as const) test(`a quote keeps its 
   expect((await ui.find({ type: 'Text', text: /^dispatcher\.py$/ }))?.props.color).toBe(t.inlineCode)
   expect(Math.max(...(await barLines(ui))) >= 10).toBe(true)
   const buttons = await ui.findAll({ type: 'Button' })
-  expect(buttons.map(b => b.props.label)).toEqual(['⧉ copy'])
+  expect(buttons.map(b => b.props.label)).toEqual(['📋 copy'])
   await ui.press({ key: buttons[0]!.key! })
   expect(copied).toEqual([DRAFT.split('\n').map(line => line.replace(/^>\s?/, '')).join('\n')])
   await ui.unmount()
@@ -2639,7 +2639,7 @@ for (const surface of ['terminal', 'desktop'] as const) test(`an alert keeps a l
   for (const text of [/^run the tests$/, /^update the CHANGELOG$/]) expect(await ui.find({ type: 'Text', text })).toBeDefined()
   expect((await ui.findAll({ type: 'Box' })).find(b => b.props.borderStyle === 'round')?.text).toContain('update the CHANGELOG')
   const buttons = await ui.findAll({ type: 'Button' })
-  expect(buttons.map(b => b.props.label)).toEqual(['⧉ copy'])
+  expect(buttons.map(b => b.props.label)).toEqual(['📋 copy'])
   await ui.press({ key: buttons[0]!.key! })
   expect(copied).toEqual(['Before you merge:\n- run the tests\n- update the CHANGELOG'])
   await ui.unmount()
@@ -2660,11 +2660,11 @@ for (const surface of ['terminal', 'desktop'] as const) test(`a code block and a
     expect((await ui.findAll({ type: 'Box' })).filter(b => typeof b.props.width === 'string' && /^\d+%$/.test(b.props.width as string) && /^(Check|Result)$/.test(b.text ?? ''))).toHaveLength(2)
   } else {
     const edge = await ui.find({ type: 'Text', text: /^┌[─┬]+┐$/ })
-    expect(width('│ ') + width(edge!.text) + 2 + width('[ ⧉ copy ]') <= 60 - 4).toBe(true)
+    expect(width('│ ') + width(edge!.text) + 2 + width('[ 📋 copy ]') <= 60 - 4).toBe(true)
   }
   const labels = (await ui.findAll({ type: 'Button' })).map(b => b.props.label)
-  expect(labels.filter(l => l === '⧉ copy')).toHaveLength(2)
-  expect(labels.filter(l => l === '⧉ md')).toHaveLength(1)
+  expect(labels.filter(l => l === '📋 copy')).toHaveLength(2)
+  expect(labels.filter(l => l === '📝 md')).toHaveLength(1)
   await ui.press({ key: 'b1.copy1' })
   await ui.press({ key: 'b1.copy2' })
   await ui.press({ key: 'reply' })
@@ -2724,9 +2724,9 @@ test('footnotes follow quotes and fences: a quoted fence marker inside code make
 for (const copyButtonStyle of ['dim', 'inline', 'hover'] as const) test(`a quote that opens with code puts its own ${copyButtonStyle} copy button on its last row`, { options: { copyButtonStyle } }, async $ => {
   const ui = await $.ui.mount(mount('> ```bash\n> npm test\n> ```\n>\n> Run that first.\n\n> One line.'))
   const boxes = await ui.findAll({ type: 'Box' })
-  const low = boxes.filter(b => (copyButtonStyle === 'hover' ? b.props.display === 'none' && b.props.bottom === 0 && b.props.right === 0 && b.text !== '⧉ copy reply' : b.props.alignSelf === 'flex-end' && b.key !== 'reply'))
-  expect(low.map(b => b.text)).toEqual(['⧉ copy'])
-  expect(boxes.filter(b => b.props.position === 'absolute' && b.props.top === 0 && b.props.display === 'none' && b.text !== '⧉ copy reply').map(b => b.text)).toEqual(copyButtonStyle === 'hover' ? ['⧉ copy', '⧉ copy'] : [])
+  const low = boxes.filter(b => (copyButtonStyle === 'hover' ? b.props.display === 'none' && b.props.bottom === 0 && b.props.right === 0 && b.text !== '💬 copy reply' : b.props.alignSelf === 'flex-end' && b.key !== 'reply'))
+  expect(low.map(b => b.text)).toEqual(['📋 copy'])
+  expect(boxes.filter(b => b.props.position === 'absolute' && b.props.top === 0 && b.props.display === 'none' && b.text !== '💬 copy reply').map(b => b.text)).toEqual(copyButtonStyle === 'hover' ? ['📋 copy', '📋 copy'] : [])
   await ui.unmount()
 })
 
@@ -2742,11 +2742,11 @@ const floatRoom = (node: FloatNode, room = 0): { labels: string[]; needs: number
   return floatKids(node).flatMap(child => floatRoom(child, here))
 }
 const hoverFloats = async (ui: { findAll: (query: { type: string }) => Promise<{ props: Record<string, unknown>; text?: string }[]> }) =>
-  (await ui.findAll({ type: 'Box' })).filter(b => b.props.position === 'absolute' && b.props.display === 'none' && b.text !== '⧉ copy reply')
+  (await ui.findAll({ type: 'Box' })).filter(b => b.props.position === 'absolute' && b.props.display === 'none' && b.text !== '💬 copy reply')
 
 test('copyButtonStyle hover reserves every floating button\'s width on the block it floats over', { options: { copyButtonStyle: 'hover' } }, async $ => {
   const ui = await $.ui.mount(mount('| a |\n|---|\n| 1 |\n\n```\nx\n```\n\n- y\n\n> z\n\n> [!NOTE]\n> w\n\n> ```\n> q\n> ```\n\n- item\n  ```\n  v\n  ```\n\n```mermaid\nflowchart LR\n  A --> B\n```'))
-  const floats = floatRoom((await ui.drawn()) as FloatNode).filter(f => !f.labels.includes('⧉ copy reply'))
+  const floats = floatRoom((await ui.drawn()) as FloatNode).filter(f => !f.labels.includes('💬 copy reply'))
   expect(floats.length).toBeGreaterThanOrEqual(9)
   for (const float of floats) expect({ ...float, fits: float.room >= float.needs }).toMatchObject({ fits: true })
   await ui.unmount()
@@ -2755,15 +2755,15 @@ test('copyButtonStyle hover reserves every floating button\'s width on the block
 test('copyButtonStyle hover puts the button of a quote whose nested quote opens with code on its last row, clear of the code\'s own', { options: { copyButtonStyle: 'hover' } }, async $ => {
   const ui = await $.ui.mount(mount('> > ```bash\n> > ls\n> > ```\n>\n> text'))
   const floats = await hoverFloats(ui)
-  expect(floats.filter(b => b.props.top === 0).map(b => b.text)).toEqual(['⧉ copy'])
-  expect(floats.filter(b => b.props.bottom === 0).map(b => b.text)).toEqual(['⧉ copy'])
+  expect(floats.filter(b => b.props.top === 0).map(b => b.text)).toEqual(['📋 copy'])
+  expect(floats.filter(b => b.props.bottom === 0).map(b => b.text)).toEqual(['📋 copy'])
   await ui.unmount()
 })
 
 test('copyButtonStyle hover gives a quote holding only an empty code block one button, so two never share its single row', { options: { copyButtonStyle: 'hover' } }, async $ => {
   for (const text of ['> ```\n> ```', '> > ```\n> > ```']) {
     const ui = await $.ui.mount(mount(text))
-    expect((await hoverFloats(ui)).map(b => b.text)).toEqual(['⧉ copy'])
+    expect((await hoverFloats(ui)).map(b => b.text)).toEqual(['📋 copy'])
     await ui.unmount()
   }
 })
@@ -2791,7 +2791,7 @@ test('copyButtonStyle hover anchors the buttons of a right-to-left block at its 
   expect(await anchors('- hello\n- world')).toEqual(['right'])
 })
 
-test('copyButtonStyle hover puts the ⧉ of a right-to-left block at its left, where its lines end', { options: { copyButtonStyle: 'hover', rtl: 'warp' } }, async $ => {
+test('copyButtonStyle hover puts the 📋 of a right-to-left block at its left, where its lines end', { options: { copyButtonStyle: 'hover', rtl: 'warp' } }, async $ => {
   const side = async (text: string) => {
     const ui = await $.ui.mount(mount(text))
     const row = (await ui.find({ key: 'c0' }))!.children[0] as FloatNode
@@ -3054,7 +3054,7 @@ const quoteBarRows = async (ui: { findAll: (query: { type: 'Text' }) => Promise<
 
 for (const tableStyle of ['box', 'rules', 'grid', 'minimal'] as const) {
   test(`a quoted ${tableStyle} table's bar under classic is as tall as before tableLayout`, { options: { tableStyle, tableLayout: 'classic' } }, async $ => {
-    for (const [columns, rows] of [[40, 28], [60, 23]] as const) {
+    for (const [columns, rows] of [[40, 29], [60, 23]] as const) {
       const ui = await $.ui.mount(mount(QUOTED_TABLE, columns))
       expect(await quoteBarRows(ui)).toEqual([rows])
       await ui.unmount()

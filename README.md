@@ -29,7 +29,7 @@
 - 18 palettes plus `mono`, and copy buttons on everything.
 - Full app themes for Claude Code desktop: set `desktopColors` to `match` and the whole Code tab takes the palette too (Claude Code 2.1.324+).
 - Two commands to install, `/plugin` to turn it off. Claude Code's own renderer comes back the moment you do.
-- No network calls. It runs a program only when you click `⧉ html` or `▣ png` (the clipboard helper) or turn on LaTeX (RaTeX's renderer).
+- No network calls. It runs a program only when you click `🌐 html` or `📸 png` (the clipboard helper) or turn on LaTeX (RaTeX's renderer).
 
 ```
 /plugin marketplace add NahumLitvin/prismantis
@@ -88,7 +88,7 @@ prismantis also runs in Antigravity, where it adds the same session note and a `
 | [Figures](#figures) | ` ```figure ` text pictures drawn as written in the theme's colors, for timelines, layouts and before and after; glyphs and markup checked before they are drawn |
 | [LaTeX math](#latex-math) | `$$` and ` ```math ` formulas typeset as images in kitty and Ghostty by [RaTeX](https://github.com/erweixin/RaTeX), text everywhere else |
 | [Layout](#layout) | back-to-back tables and diagrams sit side by side and wrap on narrow terminals |
-| [Copy buttons](#copy-buttons) | `⧉ md`, `⧉ art`, `⧉ html` and `▣ png` on tables, `[ ⧉ copy ]` on code, lists and quotes, `/prismantis copy` without a mouse |
+| [Copy buttons](#copy-buttons) | `📝 md`, `🎨 art`, `🌐 html` and `📸 png` on tables, `[ 📋 copy ]` on code, lists and quotes, `/prismantis copy` without a mouse |
 | [Tool rows](#tool-rows) | `Ran gh pr view 12`, `Read ~/src/app.ts`, groups summed up as `Ran 3 commands, read 2 files`, with status dots; `toolOutput: quiet` hides what Claude only read and says in plain words what each call did |
 | [Turn footer](#turn-footer) | `✻ Baked for 6m 20s` with the duration in the number color |
 | [Slash commands](#slash-commands) | command output (`/cost`, `/context`, plugin commands) gets the same tables and code styling |
@@ -208,7 +208,7 @@ Code blocks tagged `mermaid` draw as colored text art:
 - bars in a multi-series chart get their own colors; a single-series chart prints each value above its bar and colors the tallest one
 - gridlines stay dim, axis numbers use the number color
 
-`pieStyle` picks how a pie draws. `round` draws the circle as a smooth picture in kitty and Ghostty, outside tmux, and as text elsewhere; `⧉ art` still copies the text circle. It falls back to bars in ascii mode, with more slices than the theme has distinct colors (mono always) or in a narrow terminal:
+`pieStyle` picks how a pie draws. `round` draws the circle as a smooth picture in kitty and Ghostty, outside tmux, and as text elsewhere; `🎨 art` still copies the text circle. It falls back to bars in ascii mode, with more slices than the theme has distinct colors (mono always) or in a narrow terminal:
 
 | `round` (default) | `bars` |
 |---|---|
@@ -245,7 +245,7 @@ Bookings  0                   {ok:1}                 {warn:2 twice}
 - ▶ and ◀ draw as ► and ◄, as in diagrams, so no glyph turns into an emoji; in `mono`, `warn` draws bold
 - a figure stays a code block while it streams (so a reply that opens with a figure shows its markup until the block closes), when it has more than 80 lines, when a line is wider than the window or than 100 columns, and when a line would not draw as written: a glyph that may draw as an emoji or takes two columns, a tab, a control character, a direction mark or another character that draws no column (a zero-width space, a soft hyphen), or role markup in the wrong case, misspelled, nested or left open; once the block is closed, a dim line above it says why, such as `figure line 4: "⚠" may draw as an emoji, use a text glyph`
 - frames are not checked: a box that does not close or a side, corner or divider out of its column draws as written, as Claude typed it, so a frame that is slightly off still draws
-- `⧉ source` copies the block as Claude wrote it, `⧉ art` the drawn text
+- `📜 source` copies the block as Claude wrote it, `🎨 art` the drawn text
 - figures draw whether `mermaid` is on or off; only the [diagram hints](#diagram-hints) note follows `mermaid`
 - Claude learns about figures from the [diagram hints](#diagram-hints) note: prefer a figure over mermaid when position carries meaning (durations racing on a time axis, a screen layout, phases, before and after); when you ask to explain, compare or plan something and pictures would make it easier to grasp, build the reply around them, with the core on the first screen; the prose does not retell the picture; then the roles, the width and the glyphs that draw cleanly; plain flows and charts stay mermaid
 
@@ -253,7 +253,7 @@ Bookings  0                   {ok:1}                 {warn:2 twice}
 
 ![LaTeX math: plain Claude Code on the left, prismantis on the right](docs/compare/latex.png)
 
-Display math, `$$…$$` on lines of its own or a ` ```math ` block, draws as a typeset image in the theme's diagram text color, one formula per line. With copy buttons on, its `⧉ copy` button copies the formula's LaTeX, since selecting an image copies blank cells. It needs [RaTeX](https://github.com/erweixin/RaTeX)'s PNG renderer, a single binary that typesets KaTeX syntax in a few milliseconds without TeX, a browser or Node:
+Display math, `$$…$$` on lines of its own or a ` ```math ` block, draws as a typeset image in the theme's diagram text color, one formula per line. With copy buttons on, its `📋 copy` button copies the formula's LaTeX, since selecting an image copies blank cells. It needs [RaTeX](https://github.com/erweixin/RaTeX)'s PNG renderer, a single binary that typesets KaTeX syntax in a few milliseconds without TeX, a browser or Node:
 
 ```bash
 gh release download -R erweixin/RaTeX -p 'ratex-cli-*-aarch64-apple-darwin.tar.gz'
@@ -278,21 +278,21 @@ When tables, diagrams and figures follow each other, they share a row and wrap o
 
 ![Copy buttons: plain Claude Code on the left, prismantis on the right](docs/compare/copy.png)
 
-- **Tables:** `⧉ md` copies the original Markdown and `⧉ art` a boxed table that pastes well into Slack. `⧉ html` copies a formatted table (headers, alignment, inline formatting) plus a tab-separated plain-text copy.
-- **Code, lists and quotes:** `[ ⧉ copy ]` on each. Code copies without its fences, lists as markdown, quotes without their `> ` markers. Set `textCopyButtons` to `false` to drop the buttons on lists, quotes and alerts and keep the rest.
-- **Sections:** set `sectionCopyButtons` to `true` and each heading gets `[ ⧉ copy ]`, which copies its section as markdown, up to the next heading of the same or a higher level. Off by default.
-- **Diagrams and figures:** `⧉ source` copies the mermaid or figure source, `⧉ art` the drawn art.
-- **As an image:** `▣ png` on tables, diagrams and figures puts a PNG of the drawn art on the clipboard, monospace in the theme's text and background colors, ready to paste into Slack, docs or slides. It shows in a local macOS or Windows terminal and draws with the OS's own fonts (`osascript` on macOS, `powershell.exe` on Windows), so it needs nothing installed. If that fails, it copies the drawn text and the toast says why.
-- **Whole replies:** replies with more than one block, or any Hebrew or Arabic, end with `⧉ copy reply`, which copies the reply as Claude wrote it. Selecting right-to-left text on screen copies letters in drawn order, not reading order.
+- **Tables:** `📝 md` copies the original Markdown and `🎨 art` a boxed table that pastes well into Slack. `🌐 html` copies a formatted table (headers, alignment, inline formatting) plus a tab-separated plain-text copy.
+- **Code, lists and quotes:** `[ 📋 copy ]` on each. Code copies without its fences, lists as markdown, quotes without their `> ` markers. Set `textCopyButtons` to `false` to drop the buttons on lists, quotes and alerts and keep the rest.
+- **Sections:** set `sectionCopyButtons` to `true` and each heading gets `[ 📋 copy ]`, which copies its section as markdown, up to the next heading of the same or a higher level. Off by default.
+- **Diagrams and figures:** `📜 source` copies the mermaid or figure source, `🎨 art` the drawn art.
+- **As an image:** `📸 png` on tables, diagrams and figures puts a PNG of the drawn art on the clipboard, monospace in the theme's text and background colors, ready to paste into Slack, docs or slides. It shows in a local macOS or Windows terminal and draws with the OS's own fonts (`osascript` on macOS, `powershell.exe` on Windows), so it needs nothing installed. If that fails, it copies the drawn text and the toast says why.
+- **Whole replies:** replies with more than one block, or any Hebrew or Arabic, end with `💬 copy reply`, which copies the reply as Claude wrote it. Selecting right-to-left text on screen copies letters in drawn order, not reading order.
 - **No mouse:** `/prismantis copy` copies the last reply, `/prismantis copy code` its last code block.
 
-`copyButtonStyle` picks how the buttons look and where they sit. `dim`, the default, draws them beside or above each block as bare `⧉ md ⧉ art` labels, dim until the pointer or the focus is on one, which lights it up. Older Claude Code versions draw them in plain white. `inline` draws the same buttons in the theme's accent color. `hover` puts a dim ⧉ beside each block's first row instead, at its left on a right-to-left block, and one in the reply's bottom-right corner for the whole reply. Pointing at a ⧉ draws its buttons over it, so they take no line and nothing moves when they show; the pointer on the block itself shows nothing. ctrl+x tab does not reach a hidden button, and the mobile app, which has no pointer, draws them inline.
+`copyButtonStyle` picks how the buttons look and where they sit. `dim`, the default, draws them beside or above each block as bare `📝 md 🎨 art` labels, dim until the pointer or the focus is on one, which lights it up. Older Claude Code versions draw them in plain white. `inline` draws the same buttons in the theme's accent color. `hover` puts a dim 📋 beside each block's first row instead, at its left on a right-to-left block, and one in the reply's bottom-right corner for the whole reply. Pointing at a 📋 draws its buttons over it, so they take no line and nothing moves when they show; the pointer on the block itself shows nothing. ctrl+x tab does not reach a hidden button, and the mobile app, which has no pointer, draws them inline.
 
-![copyButtonStyle dim: a figure and a box, each with bare ⧉ source, ⧉ art and ▣ png buttons drawn dim above it](docs/copy/dim.png)
+![copyButtonStyle dim: a figure and a box, each with bare 📜 source, 🎨 art and 📸 png buttons drawn dim above it](docs/copy/dim.png)
 
-![copyButtonStyle hover: at rest a table, a bash block and the reply each show a dim ⧉; with the pointer on the table's ⧉, its ⧉ md, ⧉ art and ⧉ html buttons draw over the marker and the end of the header row](docs/copy/hover.png)
+![copyButtonStyle hover: at rest a table, a bash block and the reply each show a dim 📋; with the pointer on the table's 📋, its 📝 md, 🎨 art and 🌐 html buttons draw over the marker and the end of the header row](docs/copy/hover.png)
 
-`⧉ html` shows in a local macOS terminal or a Linux graphical session. macOS needs nothing extra. Linux needs [CopyQ](https://copyq.readthedocs.io/en/stable/installation.html) running (see its [Wayland caveats](https://copyq.readthedocs.io/en/stable/known-issues.html#on-linux-some-features-do-not-work-under-wayland)). On Ubuntu:
+`🌐 html` shows in a local macOS terminal or a Linux graphical session. macOS needs nothing extra. Linux needs [CopyQ](https://copyq.readthedocs.io/en/stable/installation.html) running (see its [Wayland caveats](https://copyq.readthedocs.io/en/stable/known-issues.html#on-linux-some-features-do-not-work-under-wayland)). On Ubuntu:
 
 ```bash
 sudo apt install -y copyq && copyq --start-server && copyq config autostart true
@@ -510,7 +510,7 @@ A color is hex (`#a6e3a1`, `#fc0`), `rgb(166,227,161)`, `ansi256(114)` or a name
 | `rule` | rules, diff card borders, chart gridlines |
 | `tableHeader` | table header cells |
 | `tableRule` | table rules |
-| `tableText` | plain text in table body cells, on screen and in the `▣ png` copy (the terminal's own text color) |
+| `tableText` | plain text in table body cells, on screen and in the `📸 png` copy (the terminal's own text color) |
 | `bullet` | list bullets and numbers |
 | `diagram` | diagram lines, `accent` in figures |
 | `diagramText` | diagram labels, LaTeX formulas and figure text |
@@ -526,15 +526,15 @@ A color is hex (`#a6e3a1`, `#fc0`), `rgb(166,227,161)`, `ansi256(114)` or a name
 | `alertWarning` | the box, bar and label of `> [!WARNING]` alerts (the terminal's yellow) |
 | `alertCaution` | the box, bar and label of `> [!CAUTION]` alerts (the terminal's red) |
 | `replyBorder` | the frame and `⬤ Claude` label of Claude's replies with `replyStyle: bubble` or `framed` (Claude Code's own Claude orange) |
-| `pngBackground` | the background of the `▣ png` copy (the theme's background, white when it has none) |
+| `pngBackground` | the background of the `📸 png` copy (the theme's background, white when it has none) |
 
 ## Troubleshooting
 
 - **A setting or update didn't take:** run `/reload`. A session keeps what it loaded.
 - **A diagram shows as code:** its source is over 80 lines or 8,000 characters, it's wider than the window, it doesn't parse, or `mermaid` is off. Widen the terminal or split the diagram.
 - **A figure shows as code:** it is still streaming, it has more than 80 lines, a line is wider than the window or than 100 columns, or a line holds a glyph, character or markup that would not draw as written; the dim line above it names the line (see [Figures](#figures)). A frame that is slightly off draws as written, never as code. Widen the terminal, or ask Claude to fix the glyph or the markup.
-- **No `⧉ html` on tables:** you're over SSH, in the desktop app or VS Code, or on Linux with no graphical session. `⧉ md` and `⧉ art` still work.
-- **`⧉ html` copied plain text only:** CopyQ isn't running, or the clipboard helper failed. The toast says why.
+- **No `🌐 html` on tables:** you're over SSH, in the desktop app or VS Code, or on Linux with no graphical session. `📝 md` and `🎨 art` still work.
+- **`🌐 html` copied plain text only:** CopyQ isn't running, or the clipboard helper failed. The toast says why.
 - **Clicking a copy button selects the word "copy":** your terminal copies on select. Use `/prismantis copy`.
 - **Fills look flat gray in tmux:** Claude Code draws 256 colors inside tmux, which turns dark fills gray. Set `CLAUDE_CODE_TMUX_TRUECOLOR=1` in the environment Claude Code starts in.
 - **`You ●` instead of `You ⬤` in tmux, screen or Zellij:** on purpose. The large dot can draw across two cells in the terminal outside, which leaves half dots behind and over the next letter.
@@ -559,7 +559,7 @@ To change the code, read [AGENTS.md](AGENTS.md) instead.
 - **What it is:** a Claude Code mod (function hooks in TypeScript) that redraws assistant replies, slash-command output, tool rows, the turn footer and user prompts. It changes how things look, and with `diagramHints` on (the default) it also asks Claude to build a reply around pictures when they make it easier to grasp, with the core on the first screen as a picture or a sentence. What it sends the model is the optional notes below: the diagram hint, the issue hint and, with `keyPointHint` on, the key points note.
 - **Install:** `/plugin marketplace add NahumLitvin/prismantis`, then `/plugin install prismantis@prismantis`. Needs Claude Code 2.1.287+. Changes apply after `/reload`.
 - **Configure:** `/prismantis theme <name>` and `/prismantis setup` set options at runtime. Every option is a key under `pluginConfigs["prismantis@prismantis"].options` in `~/.claude/settings.json` (or a row in `/config`), then `/reload`. Options and defaults are in the [Configure](#configure) table; the machine-readable source is `userConfig` in [.claude-plugin/plugin.json](plugin/.claude-plugin/plugin.json). Color values that don't parse are ignored.
-- **Side effects:** no network. Programs it runs: the `⧉ html` and `▣ png` clipboard helper (`/usr/bin/osascript` on macOS, `powershell.exe` on Windows, `copyq` on Linux for `⧉ html` only, 5 second timeout, 15 on Windows, only on a click), and `ratex-render` while `latex` is on. With `diagramHints` on, it adds about 630 tokens of model-only context (about 710 while `latex` is on) to each prompt you type and each prompt another plugin sends, as broken down under [Diagram hints](#diagram-hints). With `keyPointHint` on, it adds about 80 more.
+- **Side effects:** no network. Programs it runs: the `🌐 html` and `📸 png` clipboard helper (`/usr/bin/osascript` on macOS, `powershell.exe` on Windows, `copyq` on Linux for `🌐 html` only, 5 second timeout, 15 on Windows, only on a click), and `ratex-render` while `latex` is on. With `diagramHints` on, it adds about 630 tokens of model-only context (about 710 while `latex` is on) to each prompt you type and each prompt another plugin sends, as broken down under [Diagram hints](#diagram-hints). With `keyPointHint` on, it adds about 80 more.
 - **Turning it off:** `"enabled": false`, or disable the plugin in `/plugin`. To keep it in one app only, like the terminal but not the desktop app, set `"surfaces": "terminal"`.
 - **For other mods:** `$.prismantis.markdown({ surface, text, columns })`, typed in [plugin/types/index.d.ts](plugin/types/index.d.ts). See [Other mods](#other-mods).
 

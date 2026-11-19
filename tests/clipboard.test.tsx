@@ -31,7 +31,7 @@ for (const [backend, setup] of Object.entries(backends)) test(`${backend} copies
   const toasts = recordToasts(on)
   await startSession($, on)
   const ui = await $.ui.mount(mount)
-  expect((await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '⧉ copy reply')).toEqual(['⧉ md', '⧉ art', '⧉ html', ...(backend === 'macos' ? ['▣ png'] : [])])
+  expect((await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '💬 copy reply')).toEqual(['📝 md', '🎨 art', '🌐 html', ...(backend === 'macos' ? ['📸 png'] : [])])
   expect(calls).toHaveLength(0)
   await ui.press({ key: 'html0' })
   expect(calls).toHaveLength(1)
@@ -56,7 +56,7 @@ test('windows copies HTML and CRLF plain text through PowerShell', async ($, on)
   const toasts = recordToasts(on)
   await startSession($, on)
   const ui = await $.ui.mount({ ...mount, props: { text: '| Name | Value |\n|--|--|\n| ✅ done | ❌ failed |', isFirstOfReply: true } })
-  expect((await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '⧉ copy reply')).toEqual(['⧉ md', '⧉ art', '⧉ html', '▣ png'])
+  expect((await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '💬 copy reply')).toEqual(['📝 md', '🎨 art', '🌐 html', '📸 png'])
   expect(calls).toHaveLength(0)
   await ui.press({ key: 'html0' })
   expect(calls).toHaveLength(1)
@@ -140,7 +140,7 @@ for (const [where, setup] of Object.entries(hidden)) test(`the HTML action is hi
   const copies = recordCopies(on)
   await startSession($, on)
   const ui = await $.ui.mount({ ...mount, surface: setup.surface })
-  expect((await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '⧉ copy reply')).toEqual(['⧉ md', '⧉ art'])
+  expect((await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '💬 copy reply')).toEqual(['📝 md', '🎨 art'])
   await ui.press({ key: 'copy0' })
   expect(copies).toEqual([source])
   expect(processes).toBe(0)
@@ -158,18 +158,18 @@ test('the HTML check runs once, on session start or on the first prompt after a 
   on('prompt.submit', (_, e) => ({ text: e.text, context: e.context }))
   on('session.start', () => ({ cwd: '/tmp' }))
   const before = await $.ui.mount(mount)
-  expect((await before.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '⧉ copy reply')).toEqual(['⧉ md', '⧉ art'])
+  expect((await before.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '💬 copy reply')).toEqual(['📝 md', '🎨 art'])
   await before.unmount()
   await $.prompt.submit({ text: 'hi', wait: false, origin: { kind: 'composer' } })
   await $.prompt.submit({ text: 'again', wait: false, origin: { kind: 'composer' } })
   await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
   const after = await $.ui.mount(mount)
-  expect((await after.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '⧉ copy reply')).toEqual(['⧉ md', '⧉ art', '⧉ html', '▣ png'])
+  expect((await after.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '💬 copy reply')).toEqual(['📝 md', '🎨 art', '🌐 html', '📸 png'])
   expect(checks).toBe(1)
   await after.unmount()
 })
 
-test('a table drawn before the HTML check lands gains ⧉ html when it lands', async ($, on) => {
+test('a table drawn before the HTML check lands gains 🌐 html when it lands', async ($, on) => {
   let release = () => {}
   const held = new Promise<void>(resolve => { release = resolve })
   mock.env(on, {})
@@ -180,12 +180,12 @@ test('a table drawn before the HTML check lands gains ⧉ html when it lands', a
   })
   on('session.start', () => ({ cwd: '/tmp' }))
   const ui = await $.ui.mount(mount)
-  const labels = async () => (await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '⧉ copy reply')
+  const labels = async () => (await ui.findAll({ type: 'Button' })).map(button => button.props.label).filter(label => label !== '💬 copy reply')
   const started = $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
-  expect(await labels()).toEqual(['⧉ md', '⧉ art'])
+  expect(await labels()).toEqual(['📝 md', '🎨 art'])
   release()
   await started
-  expect(await labels()).toEqual(['⧉ md', '⧉ art', '⧉ html', '▣ png'])
+  expect(await labels()).toEqual(['📝 md', '🎨 art', '🌐 html', '📸 png'])
   await ui.unmount()
 })
 
@@ -231,7 +231,7 @@ test('the image helper gets right-to-left cell text in drawn order, each letter 
   expect(lines[1].at(-1)).toEqual({ at: 14, text: '│' })
 })
 
-test('▣ png of a 500 row table gets a helper timeout sized to its input, capped at 30 s', async ($, on) => {
+test('📸 png of a 500 row table gets a helper timeout sized to its input, capped at 30 s', async ($, on) => {
   clipboardEnv(on, 'macos')
   const timeouts: (number | undefined)[] = []
   on('process.run', (_, e) => {
@@ -271,7 +271,7 @@ const pngSetups = {
   linux: { platform: 'other', env: { DISPLAY: ':0' }, script: undefined },
 } as const
 
-for (const surface of ['terminal', 'desktop'] as const) for (const [backend, setup] of Object.entries(pngSetups)) test(`▣ png on tables and diagrams ${setup.script && surface === 'terminal' ? 'copies an image' : 'is hidden'} on ${backend} ${surface}`, async ($, on) => {
+for (const surface of ['terminal', 'desktop'] as const) for (const [backend, setup] of Object.entries(pngSetups)) test(`📸 png on tables and diagrams ${setup.script && surface === 'terminal' ? 'copies an image' : 'is hidden'} on ${backend} ${surface}`, async ($, on) => {
   clipboardEnv(on, setup.platform, setup.env)
   const calls: { argv: readonly string[]; input: string }[] = []
   on('process.run', (_, e) => {
@@ -282,7 +282,7 @@ for (const surface of ['terminal', 'desktop'] as const) for (const [backend, set
   const toasts = recordToasts(on)
   await startSession($, on)
   const ui = await $.ui.mount({ ...mount, surface, props: { text: figures, isFirstOfReply: true } })
-  const pngs = (await ui.findAll({ type: 'Button' })).filter(button => button.props.label === '▣ png').map(button => button.key)
+  const pngs = (await ui.findAll({ type: 'Button' })).filter(button => button.props.label === '📸 png').map(button => button.key)
   if (!setup.script || surface !== 'terminal') {
     expect(pngs).toEqual([])
     await ui.unmount()
@@ -316,7 +316,7 @@ test('a failed image copy falls back to the drawn text and says why', async ($, 
   await ui.unmount()
 })
 
-test('the last copy pressed wins: ⧉ md pressed while ▣ png still draws lands after the image, and ⧉ art pressed between is dropped', async ($, on) => {
+test('the last copy pressed wins: 📝 md pressed while 📸 png still draws lands after the image, and 🎨 art pressed between is dropped', async ($, on) => {
   clipboardEnv(on, 'macos')
   const order: string[] = []
   let release = () => {}
@@ -343,7 +343,7 @@ test('the last copy pressed wins: ⧉ md pressed while ▣ png still draws lands
   await ui.unmount()
 })
 
-test('/prismantis copy run while ▣ png still draws lands after the image', async ($, on) => {
+test('/prismantis copy run while 📸 png still draws lands after the image', async ($, on) => {
   clipboardEnv(on, 'macos')
   const order: string[] = []
   let release = () => {}
@@ -379,7 +379,7 @@ test('/prismantis copy with an unknown target copies nothing and says how to use
   expect(result.text).toBe('Unknown copy target "cdoe". Use /prismantis copy, or /prismantis copy code for the last code block.')
 })
 
-test('copyButtons off draws no ▣ png',{ options: { copyButtons: false } }, async ($, on) => {
+test('copyButtons off draws no 📸 png',{ options: { copyButtons: false } }, async ($, on) => {
   clipboardEnv(on, 'macos')
   await startSession($, on)
   const ui = await $.ui.mount({ ...mount, props: { text: figures, isFirstOfReply: true } })
@@ -387,7 +387,7 @@ test('copyButtons off draws no ▣ png',{ options: { copyButtons: false } }, asy
   await ui.unmount()
 })
 
-test('▣ png draws a table as the screen does: header bold in its color, rules, inline colors and table text', { options: { theme: 'catppuccin-mocha', tableTextColor: '#ffffff' } }, async ($, on) => {
+test('📸 png draws a table as the screen does: header bold in its color, rules, inline colors and table text', { options: { theme: 'catppuccin-mocha', tableTextColor: '#ffffff' } }, async ($, on) => {
   clipboardEnv(on, 'macos')
   const inputs: string[] = []
   on('process.run', (_, e) => {
@@ -450,7 +450,7 @@ test('a pngBackgroundColor the png helper cannot read falls back to the theme ba
   await ui.unmount()
 })
 
-test('▣ png keeps the colors the figure and the diagram draw with', async ($, on) => {
+test('📸 png keeps the colors the figure and the diagram draw with', async ($, on) => {
   clipboardEnv(on, 'macos')
   const inputs: string[] = []
   on('process.run', (_, e) => {
@@ -479,7 +479,7 @@ test('the png helper keeps a chart gridline dot in its dim rule color', () => {
   expect(glyphs.map((g: { color?: number[] }) => g.color)).toEqual([[0x45, 0x47, 0x5a], [255, 255, 255]])
 })
 
-test('▣ png in mono draws table rules and chart gridline dots dim, not in the text color', { options: { theme: 'mono' } }, async ($, on) => {
+test('📸 png in mono draws table rules and chart gridline dots dim, not in the text color', { options: { theme: 'mono' } }, async ($, on) => {
   clipboardEnv(on, 'macos')
   const inputs: string[] = []
   on('process.run', (_, e) => {
@@ -523,7 +523,7 @@ test('a Hebrew table copies to png and html with its columns right to left, as t
   await ui.unmount()
 })
 
-test('⧉ art copies a Hebrew table with its columns right to left, as the screen and ▣ png draw it', { options: { rtl: 'warp' } }, async ($, on) => {
+test('🎨 art copies a Hebrew table with its columns right to left, as the screen and 📸 png draw it', { options: { rtl: 'warp' } }, async ($, on) => {
   clipboardEnv(on, 'macos')
   on('process.run', () => runResult(0))
   const copies = recordCopies(on)

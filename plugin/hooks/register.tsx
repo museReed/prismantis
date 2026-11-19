@@ -496,7 +496,7 @@ const copyNow = async ($: EngineInterface, style: Style, content: string, surfac
 
 const drawMarkdown = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['resolve']>, style: Style, blocks: ReturnType<typeof parse>, columns: number, math: Map<number, Typeset> = new Map(), pictures: Map<number, Picture> = new Map(), reply?: string, open?: string[], notes?: { id: string; press: boolean }): RenderElement[] => {
   const { Button } = el
-  const copy = (text: string | (() => string), key: string, label = '⧉ copy', rich?: (() => string) | 'png', hues?: () => Hues) => {
+  const copy = (text: string | (() => string), key: string, label = '📋 copy', rich?: (() => string) | 'png', hues?: () => Hues) => {
     const copied = (surface: RenderSurface) => lastCopy(() => copyNow($, style, typeof text === 'function' ? text() : text, surface, rich, hues?.()))
     return style.copyButtons && offers(style, rich) ? (
       <Button
@@ -524,7 +524,7 @@ const drawMarkdown = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['
   }
   const tip = notes?.press ? noteTip(blocks, text => void $.ui.toast(text)) : undefined
   const elements = renderBlocks(el, notes ? { ...style, noteKey: instanceKey(notes.id) } : style, blocks, columns, drawMath(el, style, blocks, drawn), copy, folder($, el, open, false, style.folds === 'open'), tip)
-  const button = reply === undefined ? null : copy(reply, 'reply', '⧉ copy reply')
+  const button = reply === undefined ? null : copy(reply, 'reply', '💬 copy reply')
   if (!button) return elements
   return [...elements, style.copyButtonStyle === 'hover' ? replyMarker(el, button, notes?.id) : <el.Box key="reply" alignSelf="flex-end">{button}</el.Box>]
 }
@@ -533,7 +533,7 @@ const replyMarker = (el: ReturnType<EngineInterface['ui']['resolve']>, button: R
   const scope = `copy:${id === undefined ? '' : instanceKey(id)}:reply`
   return (
     <el.Box key="reply" position="absolute" bottom={0} right={-MARK} hover={{ scope }}>
-      <el.Text dimColor>⧉</el.Text>
+      <el.Text dimColor>📋</el.Text>
       <el.Box position="absolute" top={0} right={0} display="none" hover={{ scope, display: 'flex' }}>{button}</el.Box>
     </el.Box>
   )
@@ -712,11 +712,11 @@ const SETUP_TABLE = '| Item | Qty |\n|:-----|----:|\n| Apples | 3 |\n| Pears | 5
 const SETUP_SENT = new Date(2026, 0, 15, 14, 32).getTime()
 
 const copySample = (el: ReturnType<EngineInterface['ui']['resolve']>, style: Style, value: string, id: string, columns: number): RenderElement[] => {
-  const label: CopyButton = (_text, key, name = '⧉ copy', rich) => (offers(style, rich) ? (style.copyButtonStyle === 'dim' ? <el.Text key={key} dimColor>{name}</el.Text> : <el.Text key={key} bold>{`[ ${name} ]`}</el.Text>) : null)
+  const label: CopyButton = (_text, key, name = '📋 copy', rich) => (offers(style, rich) ? (style.copyButtonStyle === 'dim' ? <el.Text key={key} dimColor>{name}</el.Text> : <el.Text key={key} bold>{`[ ${name} ]`}</el.Text>) : null)
   const table = renderBlocks(el, style, parse(SETUP_TABLE, { numbers: style.highlightNumbers, paths: style.highlightPaths }), columns, new Map(), label)
   return [
     <el.Box key={`${id}t`} flexDirection="column">{table}</el.Box>,
-    ...(value === 'hover' ? [<el.Text key={`${id}h`} dimColor>{'Its buttons show only while the pointer is on its ⧉.'}</el.Text>] : []),
+    ...(value === 'hover' ? [<el.Text key={`${id}h`} dimColor>{'Its buttons show only while the pointer is on its 📋.'}</el.Text>] : []),
   ]
 }
 
