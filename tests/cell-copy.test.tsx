@@ -1,5 +1,6 @@
-import { expect, test } from 'claude-code/testing'
+import { expect, mock, test } from 'claude-code/testing'
 
+import { joinCellLines } from '../hooks/render'
 import { resolveStyle } from '../hooks/theme'
 import { clipboardEnv, recordCopies, recordToasts, startSession } from './clipboard-env'
 
@@ -26,6 +27,7 @@ test('cellCopy is off unless asked', () => {
 
 test('cellCopy makes each body cell a button that copies its plain text', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
+  mock.clock(on)
   const copies = recordCopies(on)
   const toasts = recordToasts(on)
   await startSession($, on)
@@ -50,6 +52,7 @@ test('cellCopy leaves header cells and cells with links alone', { options: { cel
 
 test('cellCopy reaches a table inside a quote', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
+  mock.clock(on)
   const copies = recordCopies(on)
   await startSession($, on)
   const ui = await $.ui.mount(reply('> | a |\n> |--|\n> | inner |'))
@@ -76,14 +79,30 @@ test('without cellCopy a table has no cell buttons', async ($, on) => {
   await ui.unmount()
 })
 
-test('cellCopy copies the whole cell from any line of a cell split with br', { options: { cellCopy: true } }, async ($, on) => {
+test('cellCopy copies the pressed line, and a second press within half a second copies the whole cell on one line', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
+  const clock = mock.clock(on)
   const copies = recordCopies(on)
   await startSession($, on)
-  const ui = await $.ui.mount(reply('| a |\n|--|\n| one<br>two<br/>three |'))
-  const buttons = await cellButtons(ui)
-  expect(buttons).toHaveLength(3)
-  for (const button of buttons) await ui.press({ key: keyOf(button) })
-  expect(copies).toEqual(Array(3).fill('one\ntwo\nthree'))
+  const ui = await $.ui.mount(reply('| a | b |\n|--|--|\n| one<br>two<br/>three | solo |'))
+  const keys = (await cellButtons(ui)).map(keyOf)
+  expect(keys).toHaveLength(4)
+  const [one, solo, two] = [keys.find(k => k.includes('.0.0.')), keys.find(k => k.includes('.0.1.')), keys.find(k => k.includes('.1.0.'))]
+  await ui.press({ key: two! })
+  await clock.advance(1000)
+  await ui.press({ key: one! })
+  await clock.advance(200)
+  await ui.press({ key: two! })
+  await clock.advance(1000)
+  await ui.press({ key: one! })
+  await clock.advance(200)
+  await ui.press({ key: solo! })
+  expect(copies).toEqual(['two', 'one', 'one two three', 'one', 'solo'])
   await ui.unmount()
+})
+
+test('joinCellLines puts a space between lines except where two CJK letters meet', () => {
+  expect(joinCellLines('9 欄 × 3 行\naccent 色\n400ms 換一格動畫')).toBe('9 欄 × 3 行 accent 色 400ms 換一格動畫')
+  expect(joinCellLines('第一行\n第二行。\n第三行')).toBe('第一行第二行。第三行')
+  expect(joinCellLines(' one \n\n two ')).toBe('one two')
 })

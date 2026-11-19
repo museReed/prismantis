@@ -501,6 +501,10 @@ const copyNow = async ($: EngineInterface, style: Style, content: string, surfac
   return failure ? `Copied as plain text (${failure})` : 'Copied'
 }
 
+const CELL_DOUBLE_MS = 500
+
+const cellTap = { cell: '', at: 0 }
+
 const cellCopier = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['resolve']>, style: Style): CellCopy | undefined => {
   if (!style.cellCopy || !style.copyButtons) return undefined
   const { Button } = el
@@ -509,7 +513,11 @@ const cellCopier = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['re
       key={key}
       plain
       onPress={async press => {
-        const said = await lastCopy(() => copyNow($, style, text, press.surface)).catch(() => 'Copy failed')
+        const cell = `${press.requestId}:${text.cell}`
+        const at = await $.clock.now()
+        const twice = cellTap.cell === cell && at - cellTap.at <= CELL_DOUBLE_MS
+        Object.assign(cellTap, twice ? { cell: '', at: 0 } : { cell, at })
+        const said = await lastCopy(() => copyNow($, style, twice ? text.whole : text.line, press.surface)).catch(() => 'Copy failed')
         if (said) $.ui.toast(said)
       }}
     >
