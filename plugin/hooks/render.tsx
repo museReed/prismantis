@@ -1,4 +1,4 @@
-import type { ElementTable, RenderElement, RenderNode, TextHoverProps } from 'claude-code'
+import type { ElementTable, Elements, RenderElement, RenderNode, TextHoverProps } from 'claude-code'
 
 import type { Ink } from './clipboard'
 import { figureText, isFigureLang } from './figure'
@@ -3057,6 +3057,35 @@ const claudeHead = (style: Style): string => style.bubbleLabels === 'small' ? 'â
 
 const youColor = (theme: Theme): string | undefined => theme.promptBorder ?? theme.diffAdded ?? theme.accent
 
+export const AVATAR_COLUMNS = 4
+
+export const AVATAR_ROWS = 2
+
+const youLabel = (el: ElementTable, style: Style, color: string | undefined): RenderElement => {
+  const head = <el.Text color={color} bold>{youHead(style)}</el.Text>
+  if (style.avatar === undefined || !('Image' in el)) return head
+  const { Image } = el as Elements['terminal']
+  return (
+    <el.Box flexDirection="row" alignItems="flex-end" columnGap={1}>
+      <el.Text color={color} bold>You</el.Text>
+      <Image source={{ png: style.avatar }} columns={AVATAR_COLUMNS} rows={AVATAR_ROWS} alt="You" />
+    </el.Box>
+  )
+}
+
+const claudeLabel = (el: ElementTable, style: Style): RenderElement => {
+  const color = claudeColor(style.theme)
+  const head = <el.Text color={color} bold>{claudeHead(style)}</el.Text>
+  if (style.claudeAvatar !== 'robot' || !('Client' in el)) return head
+  const { Client } = el as Elements['terminal']
+  return (
+    <el.Box flexDirection="row" alignItems="flex-end" columnGap={1}>
+      <Client key="claude-robot" module="./robot.tsx" props={color === undefined ? {} : { color }} />
+      <el.Text color={color} bold>Claude</el.Text>
+    </el.Box>
+  )
+}
+
 export const BUBBLE_STEP = 1.3
 
 const darkBackground = (hex: string): boolean => contrast(hex, '#000000') < contrast(hex, '#ffffff')
@@ -3107,7 +3136,7 @@ const chatPrompt = (el: ElementTable, style: Style, content: RenderElement, size
   )
   return (
     <el.Box flexDirection="column" width="100%" {...(size === '100%' ? {} : { alignItems: 'flex-end' as const })}>
-      {style.bubbleLabels === 'off' ? null : <el.Text color={color} bold>{youHead(style)}</el.Text>}
+      {style.bubbleLabels === 'off' ? null : youLabel(el, style, color)}
       {hugsText(style, size) ? <el.Box flexDirection="row" justifyContent="flex-end" width={`${Math.round(CHAT_SHARE * 100)}%`}>{bubble}</el.Box> : bubble}
     </el.Box>
   )
@@ -3213,7 +3242,7 @@ export const renderReply = (el: ElementTable, style: Style, drawn: RenderElement
   }
   return (
     <el.Box key="msg" flexDirection="column">
-      {first && style.bubbleLabels !== 'off' ? <el.Text color={claudeColor(style.theme)} bold>{claudeHead(style)}</el.Text> : null}
+      {first && style.bubbleLabels !== 'off' ? claudeLabel(el, style) : null}
       {replyFrame(el, style, <el.Box flexDirection="row">{body}{room}</el.Box>, columns)}
     </el.Box>
   )

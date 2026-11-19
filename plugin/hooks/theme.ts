@@ -46,6 +46,9 @@ export type Style = {
   promptStyle: 'bubble' | 'framed' | 'wide' | 'bar' | 'chevron' | 'off'
   replyStyle: 'auto' | 'bubble' | 'solid' | 'framed' | 'off'
   bubbleLabels: 'large' | 'small' | 'off'
+  youAvatar: string
+  claudeAvatar: 'dot' | 'robot'
+  avatar?: string
   clock: Clock
   toolStyle: 'chat' | 'tree-dim' | 'tree-bold' | 'classic'
   toolOutput: 'full' | 'quiet' | 'rows'
@@ -153,6 +156,8 @@ export const resolveStyle = (options: PluginOptions): Style => {
     promptStyle: pick(options.promptStyle, ['bubble', 'framed', 'wide', 'bar', 'chevron', 'off'] as const, 'bubble'),
     replyStyle: pick(options.replyStyle, ['auto', 'bubble', 'solid', 'framed', 'off'] as const, 'auto'),
     bubbleLabels: pick(options.bubbleLabels, ['large', 'small', 'off'] as const, 'large'),
+    youAvatar: typeof options.youAvatar === 'string' ? options.youAvatar.trim() : '',
+    claudeAvatar: pick(options.claudeAvatar, ['dot', 'robot'] as const, 'dot'),
     clock: pick(options.clock, ['off', '24h', '12h'] as const, 'off'),
     toolStyle: pick(options.toolStyle, ['chat', 'tree-dim', 'tree-bold', 'classic'] as const, 'chat'),
     toolOutput: pick(options.toolOutput, ['full', 'quiet', 'rows'] as const, 'full'),

@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.1",
+  "version": "0.49.0-muse.2",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -176,6 +176,19 @@
       "description": "The You ⬤ label above your prompt bubble and the ⬤ Claude label above Claude's first bubble. large: ⬤, as Claude Code draws it. small: the dot ●. off: no labels, only the frames.",
       "default": "large",
       "options": ["large", "small", "off"]
+    },
+    "youAvatar": {
+      "type": "string",
+      "title": "Your avatar",
+      "description": "A PNG beside the You label of your prompt bubble, as a path (~/.claude/prismantis/avatar.png) or file:// URL, drawn 4 columns by 2 rows. Shows in kitty and Ghostty; elsewhere the label stays as it is. Empty draws no picture.",
+      "default": ""
+    },
+    "claudeAvatar": {
+      "type": "string",
+      "title": "Claude's avatar",
+      "description": "What stands beside the Claude label of Claude's first bubble. dot: the ⬤, as Claude Code draws it. robot: a small block-drawn robot that walks, blinks and waves, three rows tall, in the terminal only.",
+      "default": "dot",
+      "options": ["dot", "robot"]
     },
     "clock": {
       "type": "string",

@@ -324,6 +324,13 @@ const picturesOf = async ($: EngineInterface, style: Style, probes: Probes, surf
   return new Map(found.flat())
 }
 
+const withAvatar = async ($: EngineInterface, style: Style, probes: Probes, surface: RenderSurface, drawn: Style): Promise<Style> => {
+  if (!style.youAvatar || !(await imagesOn($, probes, surface))) return drawn
+  await locate($, style)
+  const picture = await loadPicture($, style.youAvatar, style.home)
+  return picture ? { ...drawn, avatar: picture.png } : drawn
+}
+
 const locate = async ($: EngineInterface, style: Style) => {
   style.cwd = await $.session.root().catch(() => style.cwd)
   style.home ||= (await $.env.get('HOME').catch(() => undefined)) ?? (await $.env.get('USERPROFILE').catch(() => undefined)) ?? ''
@@ -1065,7 +1072,7 @@ export const register: Register = (on, options) => {
     const time = at === undefined ? undefined : clockText(at, await $.clock.now(), style.clock)
     if (style.promptStyle === 'off') return time === undefined ? next(e) : next({ ...e, props: { ...e.props, text: `[${time}] ${e.props.text}` } })
     const el = $.ui.resolve(e)
-    const drawn = await unreadLook($, style, forSurface(style, e, await linkReach($, probes, style)), e.props.text, e.requestId)
+    const drawn = await withAvatar($, style, probes, e.surface, await unreadLook($, style, forSurface(style, e, await linkReach($, probes, style)), e.props.text, e.requestId))
     const columns = columnsOf(e.viewport, drawn)
     const open = await read($, unfolded)
     const paste: DrawPaste = (body, key) => {
