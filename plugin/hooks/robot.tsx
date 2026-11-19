@@ -3,25 +3,22 @@ import type { ClientModule } from 'claude-code'
 type Props = { color?: string }
 type State = { tick: number }
 
-const HEAD = ' █▜▛█ '
-const BLINK = ' ████ '
-const BODY = '▄████▄'
-const FEET = ' ▛▛▜▜ '
-const STEP = ' ▜▜▛▛ '
-const WAVE_HEAD = '▖█▜▛█ '
-const WAVE_BODY = '▝████▄'
+const HEAD = '▛▜'
+const BLINK = '██'
+const FEET = '▛▜'
+const STEP = '▜▛'
 
-export const ROBOT_FRAMES: readonly (readonly [string, string, string])[] = [
-  [HEAD, BODY, FEET],
-  [HEAD, BODY, STEP],
-  [HEAD, BODY, FEET],
-  [HEAD, BODY, STEP],
-  [BLINK, BODY, FEET],
-  [HEAD, BODY, FEET],
-  [WAVE_HEAD, WAVE_BODY, FEET],
-  [HEAD, BODY, FEET],
-  [WAVE_HEAD, WAVE_BODY, FEET],
-  [HEAD, BODY, FEET],
+export const ROBOT_FRAMES: readonly (readonly [string, string])[] = [
+  [HEAD, FEET],
+  [HEAD, STEP],
+  [HEAD, FEET],
+  [HEAD, STEP],
+  [BLINK, FEET],
+  [HEAD, FEET],
+  [HEAD, FEET],
+  [HEAD, STEP],
+  [HEAD, FEET],
+  [HEAD, STEP],
 ]
 
 export const ROBOT_TICK_MS = 400

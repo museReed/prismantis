@@ -3057,9 +3057,9 @@ const claudeHead = (style: Style): string => style.bubbleLabels === 'small' ? 'â
 
 const youColor = (theme: Theme): string | undefined => theme.promptBorder ?? theme.diffAdded ?? theme.accent
 
-export const AVATAR_COLUMNS = 6
+export const AVATAR_COLUMNS = 2
 
-export const AVATAR_ROWS = 3
+export const AVATAR_ROWS = 2
 
 const youLabel = (el: ElementTable, style: Style, color: string | undefined): RenderElement => {
   const head = <el.Text color={color} bold>{youHead(style)}</el.Text>

@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.5",
+  "version": "0.49.0-muse.6",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -180,7 +180,7 @@
     "youAvatar": {
       "type": "string",
       "title": "Your avatar",
-      "description": "A PNG beside the You label of your prompt bubble, as a path (~/.claude/prismantis/avatar.png) or file:// URL, drawn 6 columns by 3 rows; a PNG with transparent corners draws round. Shows in kitty and Ghostty; elsewhere the label stays as it is. Empty draws no picture.",
+      "description": "A PNG beside the You label of your prompt bubble, as a path (~/.claude/prismantis/avatar.png) or file:// URL, drawn 2 columns by 2 rows, a box twice as tall as wide, so a 1:2 PNG with transparent edges draws round. Shows in kitty and Ghostty; elsewhere the label stays as it is. Empty draws no picture.",
       "default": ""
     },
     "youName": {
@@ -192,7 +192,7 @@
     "claudeAvatar": {
       "type": "string",
       "title": "Claude's avatar",
-      "description": "What stands beside the Claude label of Claude's first bubble. dot: the ⬤, as Claude Code draws it. robot: a small block-drawn robot that walks, blinks and waves, 6 columns by 3 rows like the avatar, in the terminal only.",
+      "description": "What stands beside the Claude label of Claude's first bubble. dot: the ⬤, as Claude Code draws it. robot: a small block-drawn robot that walks and blinks, 2 columns by 2 rows like the avatar, in the terminal only.",
       "default": "dot",
       "options": ["dot", "robot"]
     },
