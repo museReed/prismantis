@@ -32,6 +32,7 @@ Code-shaped prose stays as written: f(*args, **kwargs), a link with parentheses 
 | \`/prismantis theme <name>\` | Switch theme on the spot (\`/prismantis <name>\` works too), \`random\` for a new dark one now and each time the mod loads |
 | \`/prismantis copy\` | Copy the last reply, or \`copy code\` for its last code block |
 | \`/prismantis setup\` | Pick a theme and how prompts, replies, tables, code blocks and tool output look, from drawn samples; \`/prismantis setup more\` goes on to diffs, tool rows, headings, tasks, bubble labels, times, pie charts, the table extras and desktop app colors |
+| \`/prismantis setup you <png> <name>\` | Put your picture and name on your prompt bubble |
 | \`/config\` | Edit any option |
 
 > [!NOTE]
@@ -489,6 +490,7 @@ export const helpText = (themes: readonly string[]): string => `
 | \`/prismantis theme <name>\` | Switch theme on the spot (\`/prismantis <name>\` works too), \`random\` for a new dark one now and each time the mod loads |
 | \`/prismantis copy\` | Copy the last reply, or \`copy code\` for its last code block |
 | \`/prismantis setup\` | Pick a theme and how prompts, replies, tables, code blocks and tool output look, from drawn samples; \`/prismantis setup more\` goes on to diffs, tool rows, headings, tasks, bubble labels, times, pie charts, the table extras and desktop app colors |
+| \`/prismantis setup you <png> <name>\` | Put your picture and name on your prompt bubble |
 | \`/prismantis demo\` | Full showcase, every element and diagram, plus a section in your language (Korean so far, or \`demo ko\`) |
 | \`/prismantis demo-rtl\` | Hebrew right-to-left showcase |
 
@@ -688,4 +690,40 @@ export const findSetup = (themes: readonly string[], text: string): { at: number
     if (text.endsWith(whole)) return { at, before: text.slice(0, -whole.length).trim(), parts }
   }
   return undefined
+}
+
+export const YOU_HINT = 'Put your picture and name on your prompt bubble: /prismantis setup you'
+
+export const youSetupText = (avatar: string, name: string): string => `Your picture and name stand above your prompt bubble.
+
+Now: picture ${avatar ? `\`${avatar}\`` : 'none'}, name ${name}.
+
+| Command | Does |
+|---------|------|
+| \`/prismantis setup you ~/Pictures/me.png Ada\` | Sets both |
+| \`/prismantis setup you Ada\` | Sets the name only |
+| \`/prismantis setup you ~/Pictures/me.png\` | Sets the picture only |
+| \`/prismantis setup you reset\` | Back to no picture and You |
+
+The picture must be a PNG under 2 MB, about square. Transparent corners draw it round. It shows in kitty and Ghostty; other terminals keep the name alone. A path with spaces goes in quotes.
+
+On macOS, turn a photo into a PNG:
+
+\`\`\`sh
+mkdir -p ~/.claude/prismantis && sips -s format png ~/Pictures/me.jpg --out ~/.claude/prismantis/avatar.png
+\`\`\``
+
+export type YouArgs = { reset: true } | { reset: false; avatar?: string; name?: string }
+
+const YOU_PATH = /^(?:~|\.{1,2}\/|\/|file:\/\/)|\.png$/i
+
+export const parseYouArgs = (rest: string): YouArgs | undefined => {
+  const text = rest.trim()
+  if (!text) return undefined
+  if (/^reset$/i.test(text)) return { reset: true }
+  const quoted = text.match(/^(["'])(.+?)\1\s*(.*)$/)
+  const [first, after] = quoted ? [quoted[2]!, quoted[3]!] : [text.split(/\s+/)[0]!, text.slice(text.split(/\s+/)[0]!.length)]
+  if (!quoted && !YOU_PATH.test(first)) return { reset: false, name: text }
+  const name = after.trim()
+  return { reset: false, avatar: first, ...(name ? { name } : {}) }
 }

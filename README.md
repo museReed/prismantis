@@ -414,6 +414,45 @@ What you type, at the prompt or through Remote Control, draws in the theme's col
 |---|---|---|
 | ![You and Claude labels with the large dot over the prompt and reply bubbles](docs/prompts/bubble.png) | ![You and Claude labels with a small dot over the prompt and reply bubbles](docs/prompts/labels-small.png) | ![the prompt and reply bubbles with no labels over them](docs/prompts/labels-off.png) |
 
+#### Your picture and name
+
+`/prismantis setup you` puts your picture and name on your prompt bubble, and prismantis offers it once, the first session it finds neither set.
+
+```text
+/prismantis setup you ~/.claude/prismantis/avatar.png Ada
+/prismantis setup you Ada
+/prismantis setup you reset
+```
+
+The picture must be a PNG under 2 MB, about square; transparent corners draw it round. It shows in kitty and Ghostty, and other terminals keep the name alone. A path with spaces goes in quotes.
+
+On macOS, this turns any photo into a round 256 by 256 PNG, cropped from its middle, with nothing to install:
+
+```sh
+mkdir -p ~/.claude/prismantis && cat > ~/.claude/prismantis/round.swift <<'SWIFT'
+import CoreGraphics
+import Foundation
+import ImageIO
+let args = CommandLine.arguments
+let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: args[1]) as CFURL, nil)!
+let photo = CGImageSourceCreateThumbnailAtIndex(source, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 2048] as CFDictionary)!
+let side = min(photo.width, photo.height)
+let square = photo.cropping(to: CGRect(x: (photo.width - side) / 2, y: (photo.height - side) / 2, width: side, height: side))!
+let size = 256
+let canvas = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+canvas.interpolationQuality = .high
+canvas.addEllipse(in: CGRect(x: 0, y: 0, width: size, height: size))
+canvas.clip()
+canvas.draw(square, in: CGRect(x: 0, y: 0, width: size, height: size))
+let out = CGImageDestinationCreateWithURL(URL(fileURLWithPath: args[2]) as CFURL, "public.png" as CFString, 1, nil)!
+CGImageDestinationAddImage(out, canvas.makeImage()!, nil)
+CGImageDestinationFinalize(out)
+SWIFT
+swift ~/.claude/prismantis/round.swift ~/Pictures/me.jpg ~/.claude/prismantis/avatar.png
+```
+
+Elsewhere, crop the photo square in any image editor, export it as PNG, and point `/prismantis setup you` at it. A square picture draws with its corners.
+
 ### Right to left
 
 ![Right to left: plain Claude Code on the left, prismantis on the right](docs/compare/rtl.png)
@@ -461,6 +500,9 @@ Options sit under `options`, keyed by the plugin's install name. Project setting
 | `promptStyle` | `bubble`, `framed`, `wide`, `bar`, `chevron`, `off` | `bubble` |
 | `replyStyle` | `auto` (`bubble` while `promptStyle` is `bubble`, else `off`), `bubble`, `solid`, `framed`, `off` | `auto` |
 | `bubbleLabels` | `large` (`⬤`), `small` (`●`), `off` (no labels) | `large` |
+| `youAvatar` | a PNG path such as `~/.claude/prismantis/avatar.png`, drawn 4 columns by 2 rows beside your label in kitty and Ghostty | empty |
+| `youName` | your name on the label in place of `You`, up to 24 characters | empty (`You`) |
+| `claudeAvatar` | `robot` (a walking, blinking, waving robot beside `Claude`, terminal only), `dot` | `robot` |
 | `clock` | `off`, `24h`, `12h` | `off` |
 | `headingStyle` | `banner`, `bold`, `underline`, `uppercase` | `banner` |
 | `highlightNumbers` | `true`, `false` | `true` |
@@ -473,7 +515,7 @@ Options sit under `options`, keyed by the plugin's install name. Project setting
 | `runningDot` | `ring` (a still `◌`), `blink` (`●` on and off every half second) | `ring` |
 | `unreadPrompts` | `true` (a prompt stays grey and blinks until the model starts on it), `false` | `false` |
 | `copyButtons` | `true`, `false` | `true` |
-| `cellCopy` | `true`, `false` | `false` |
+| `cellCopy` | `true` (click a table body cell to copy it, a cell of several lines joined by spaces), `false` | `true` |
 | `copyButtonStyle` | `dim`, `inline`, `hover` | `dim` |
 | `textCopyButtons` | `true`, `false` | `true` |
 | `sectionCopyButtons` | `true`, `false` | `false` |

@@ -272,14 +272,14 @@ test('headings are right aligned and reordered', { options: { rtl: 'warp' } }, a
   await ui.unmount()
 })
 
-test('an English reply draws exactly as before', { options: { rtl: 'warp' } }, async $ => {
+test('an English reply draws exactly as before', { options: { cellCopy: false, claudeAvatar: 'dot', rtl: 'warp' } }, async $ => {
   const ui = await $.ui.mount(mount('# Title\n\nplain text\n\n- item\n\n> quote'))
   expect((await ui.findAll({ type: 'Box' })).some(b => b.props.alignItems === 'flex-end' || b.props.paddingRight !== undefined)).toBe(false)
   expect(await ui.find({ type: 'Text', text: /^• $/ })).toBeDefined()
   await ui.unmount()
 })
 
-test('by default Hebrew is left exactly as written', async $ => {
+test('by default Hebrew is left exactly as written', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async $ => {
   const ui = await $.ui.mount(mount('שלום עולם\n\n- אחד'))
   expect(await ui.find({ type: 'Text', text: /^שלום עולם$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^• $/ })).toBeDefined()

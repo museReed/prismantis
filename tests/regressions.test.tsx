@@ -2956,7 +2956,7 @@ test('a quote bar counts every line of a short <br> cell in a wide column', { op
   await ui.unmount()
 })
 
-test('a footnote mark and a clickable path inside a <br> cell keep working on their own line', async ($, on) => {
+test('a footnote mark and a clickable path inside a <br> cell keep working on their own line, with cellCopy on', { options: { cellCopy: true } }, async ($, on) => {
   claudeAt(on, '2.1.295')
   mock.env(on, { FORCE_HYPERLINK: '1', HOME: '/home/me' })
   on('session.root', () => ({ value: '/work/app' }))

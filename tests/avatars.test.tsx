@@ -20,11 +20,12 @@ const avatarFile = (on: On, path: string) => {
   on('fs.read', (_, e) => (e.path === path ? { value: { base64: PNG } } : { deny: 'no such file' }))
 }
 
-test('avatar options fall back to no picture and the dot', () => {
+test('avatar options fall back to no picture and the robot', () => {
   const style = resolveStyle({})
   expect(style.youAvatar).toBe('')
-  expect(style.claudeAvatar).toBe('dot')
-  expect(resolveStyle({ claudeAvatar: 'rocket', youAvatar: 42 }).claudeAvatar).toBe('dot')
+  expect(style.claudeAvatar).toBe('robot')
+  expect(resolveStyle({ claudeAvatar: 'rocket', youAvatar: 42 }).claudeAvatar).toBe('robot')
+  expect(resolveStyle({ claudeAvatar: 'dot' }).claudeAvatar).toBe('dot')
   expect(resolveStyle({ youAvatar: ' ~/me.png ' }).youAvatar).toBe('~/me.png')
 })
 
@@ -56,7 +57,7 @@ test('claudeAvatar robot puts the robot client beside the Claude label in the te
   await ui.unmount()
 })
 
-test('claudeAvatar dot draws no robot', { options: { replyStyle: 'bubble' } }, async $ => {
+test('claudeAvatar dot draws no robot', { options: { replyStyle: 'bubble', claudeAvatar: 'dot' } }, async $ => {
   const ui = await $.ui.mount(reply('Done.'))
   expect(await ui.find({ type: 'Client' })).toBeUndefined()
   await ui.unmount()

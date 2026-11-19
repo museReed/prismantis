@@ -19,10 +19,10 @@ const keyOf = (node: Found): string => String(node.key ?? node.props.key ?? '')
 const cellButtons = async (ui: { findAll: (q: { type: string }) => Promise<Found[]> }) =>
   (await ui.findAll({ type: 'Button' })).filter(b => keyOf(b).endsWith('.copy'))
 
-test('cellCopy is off unless asked', () => {
-  expect(resolveStyle({}).cellCopy).toBe(false)
-  expect(resolveStyle({ cellCopy: true }).cellCopy).toBe(true)
-  expect(resolveStyle({ cellCopy: 'yes' }).cellCopy).toBe(false)
+test('cellCopy is on unless turned off', () => {
+  expect(resolveStyle({}).cellCopy).toBe(true)
+  expect(resolveStyle({ cellCopy: false }).cellCopy).toBe(false)
+  expect(resolveStyle({ cellCopy: 'yes' }).cellCopy).toBe(true)
 })
 
 test('cellCopy makes each body cell a button that copies its plain text', { options: { cellCopy: true } }, async ($, on) => {
@@ -69,7 +69,7 @@ test('cellCopy draws no cell buttons with copy buttons off', { options: { cellCo
   await ui.unmount()
 })
 
-test('without cellCopy a table has no cell buttons', async ($, on) => {
+test('with cellCopy off a table has no cell buttons', { options: { cellCopy: false } }, async ($, on) => {
   clipboardEnv(on, 'other')
   await startSession($, on)
   const ui = await $.ui.mount(reply(TABLE))

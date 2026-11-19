@@ -20,7 +20,7 @@ const backends = {
   x11: { platform: 'other', env: { DISPLAY: ':0' }, argv: ['copyq', 'eval', LINUX_TABLE_COPY, '-'] },
 } as const
 
-for (const [backend, setup] of Object.entries(backends)) test(`${backend} copies HTML and plain text together`, async ($, on) => {
+for (const [backend, setup] of Object.entries(backends)) test(`${backend} copies HTML and plain text together`, { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   clipboardEnv(on, setup.platform, setup.env)
   const calls: { argv: readonly string[]; input: string }[] = []
   on('process.run', (_, e) => {
@@ -45,7 +45,7 @@ for (const [backend, setup] of Object.entries(backends)) test(`${backend} copies
   await ui.unmount()
 })
 
-test('windows copies HTML and CRLF plain text through PowerShell', async ($, on) => {
+test('windows copies HTML and CRLF plain text through PowerShell', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   clipboardEnv(on, 'other', { OS: 'Windows_NT', SystemRoot: 'C:\\Windows' })
   const calls: { argv: readonly string[]; input: string }[] = []
   on('process.run', (_, e) => {
@@ -130,7 +130,7 @@ const hidden = {
   'on desktop in Linux': { platform: 'other', env: { WAYLAND_DISPLAY: 'wayland-0' }, surface: 'desktop' },
 } as const
 
-for (const [where, setup] of Object.entries(hidden)) test(`the HTML action is hidden ${where}`, async ($, on) => {
+for (const [where, setup] of Object.entries(hidden)) test(`the HTML action is hidden ${where}`, { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   clipboardEnv(on, setup.platform, setup.env)
   let processes = 0
   on('process.run', () => {
@@ -147,7 +147,7 @@ for (const [where, setup] of Object.entries(hidden)) test(`the HTML action is hi
   await ui.unmount()
 })
 
-test('the HTML check runs once, on session start or on the first prompt after a reload', async ($, on) => {
+test('the HTML check runs once, on session start or on the first prompt after a reload', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   let checks = 0
   mock.env(on, {})
   on('fs.stat', (_, e, next) => {
@@ -169,7 +169,7 @@ test('the HTML check runs once, on session start or on the first prompt after a 
   await after.unmount()
 })
 
-test('a table drawn before the HTML check lands gains 🌐 html when it lands', async ($, on) => {
+test('a table drawn before the HTML check lands gains 🌐 html when it lands', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   let release = () => {}
   const held = new Promise<void>(resolve => { release = resolve })
   mock.env(on, {})

@@ -1046,7 +1046,7 @@ test('a long prompt in the bubble wraps at three quarters of the width', async $
 const answer = (text: string, isFirstOfReply = true, surface: 'terminal' | 'desktop' = 'terminal') =>
   ({ plugin: 'prismantis', component: 'AssistantMessage' as const, props: { text, isFirstOfReply }, viewport: { columns: 80, rows: 20 }, surface })
 
-test('replyStyle auto draws replies as a bubble by default, while your prompts are a bubble', async $ => {
+test('replyStyle auto draws replies as a bubble by default, while your prompts are a bubble', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async $ => {
   const ui = await $.ui.mount(answer('The test passes now.'))
   expect((await ui.find({ type: 'Text', text: /^⬤ {2}Claude$/ }))?.props.color).toBe('claude')
   expect((await ui.findAll({ type: 'Box' })).some(b => b.props.borderStyle === 'round')).toBe(true)
@@ -1054,7 +1054,7 @@ test('replyStyle auto draws replies as a bubble by default, while your prompts a
 })
 
 for (const [name, env] of [['tmux', { TMUX: '/tmp/tmux-501/default,1,0' }], ['screen', { STY: '1234.pts-0.host' }], ['zellij', { ZELLIJ: '0' }]] as const) {
-  test(`under ${name} the chat heads use the one-cell dot, since the terminal outside may draw the large one across two cells`, async ($, on) => {
+  test(`under ${name} the chat heads use the one-cell dot, since the terminal outside may draw the large one across two cells`, { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
     mock.env(on, env)
     await startSession($, on)
     const you = await $.ui.mount(prompt('how many frog raids?'))
@@ -1067,7 +1067,7 @@ for (const [name, env] of [['tmux', { TMUX: '/tmp/tmux-501/default,1,0' }], ['sc
   })
 }
 
-test('outside a terminal multiplexer the chat heads keep the large dot', async ($, on) => {
+test('outside a terminal multiplexer the chat heads keep the large dot', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   mock.env(on, { TERM_PROGRAM: 'ghostty' })
   await startSession($, on)
   const ui = await $.ui.mount(answer('The test passes now.'))
@@ -1090,7 +1090,7 @@ test('replyStyle off keeps the accent dot before a reply and draws no frame', { 
   await ui.unmount()
 })
 
-test('replyStyle bubble frames each block of a reply in the accent on a fill, under ⬤ Claude on the first block only', { options: { replyStyle: 'bubble' } }, async $ => {
+test('replyStyle bubble frames each block of a reply in the accent on a fill, under ⬤ Claude on the first block only', { options: { cellCopy: false, claudeAvatar: 'dot', replyStyle: 'bubble' } }, async $ => {
   const fill = replyFill(t, PRESET_BACKGROUNDS['catppuccin-mocha'])
   expect(fill).toBe('#1d2335')
   for (const surface of ['terminal', 'desktop'] as const) {
@@ -1346,7 +1346,7 @@ test('tableTextColor colors plain table cells and leaves the header and inline c
 })
 
 for (const [bubbleLabels, you, claude] of [['small', /^You ● $/, /^● Claude$/], ['off', null, null]] as const) {
-  test(`bubbleLabels ${bubbleLabels} ${you ? 'draws the small dot in both labels' : 'drops both labels and keeps the frames'}`, { options: { bubbleLabels } }, async $ => {
+  test(`bubbleLabels ${bubbleLabels} ${you ? 'draws the small dot in both labels' : 'drops both labels and keeps the frames'}`, { options: { cellCopy: false, claudeAvatar: 'dot', bubbleLabels } }, async $ => {
     for (const surface of ['terminal', 'desktop'] as const) {
       const mine = await $.ui.mount(prompt('how many frog raids?', 'composer', surface))
       const reply = await $.ui.mount(answer('The test passes now.', true, surface))
@@ -3434,7 +3434,7 @@ test('the toolOutput setup step offers rows next to full and quiet', () => {
   expect(setupSteps(PRESET_NAMES).find(s => s.key === 'toolOutput')?.options).toEqual(['full', 'quiet', 'rows'])
 })
 
-test('/prismantis setup draws each sample in its own style', async $ => {
+test('/prismantis setup draws each sample in its own style', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async $ => {
   const step = (name: string) => setupSteps(PRESET_NAMES).findIndex(s => s.name === name)
   const mount = async (at: number) =>
     $.ui.mount({ plugin: 'prismantis', surface: 'terminal', component: 'CommandOutput', props: { command: 'prismantis', args: 'setup', text: `Tables set to box.\n\n${setupText(setupParts(PRESET_NAMES, at))}`, isErrored: false }, viewport: { columns: 100, rows: 40 } })

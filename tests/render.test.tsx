@@ -316,7 +316,7 @@ test('back-to-back tables and diagrams share a wrapping row', async $ => {
   await ui.unmount()
 })
 
-test('code blocks, tables and quotes get a copy button, tables an art button, the reply a copy reply button', async ($, on) => {
+test('code blocks, tables and quotes get a copy button, tables an art button, the reply a copy reply button', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async ($, on) => {
   const copied: string[] = []
   on('ui.copy', (_, e) => {
     copied.push(e.text)
@@ -349,7 +349,7 @@ const markersOf = (tree: DrawnNode, scope: string) => withParents(tree).filter((
 const labelsOf = (node: DrawnNode) => withParents(node).filter(({ node: n }) => n.type === 'Button').map(({ node: n }) => n.props?.label).join(' ')
 const SURFACES = ['terminal', 'desktop'] as const
 
-for (const surface of SURFACES) test(`copyButtonStyle hover hides every copy button until the pointer is on its 📋 marker on ${surface}`, { options: { copyButtonStyle: 'hover' } }, async ($, on) => {
+for (const surface of SURFACES) test(`copyButtonStyle hover hides every copy button until the pointer is on its 📋 marker on ${surface}`, { options: { cellCopy: false, claudeAvatar: 'dot', copyButtonStyle: 'hover' } }, async ($, on) => {
   const copied: string[] = []
   on('ui.copy', (_, e) => {
     copied.push(e.text)
@@ -464,7 +464,7 @@ test('copyButtonStyle hover drops trailing buttons a narrow terminal has no room
   }
 })
 
-test('copyButtonStyle dim, the default, keeps every copy button in the flow', async $ => {
+test('copyButtonStyle dim, the default, keeps every copy button in the flow', { options: { cellCopy: false, claudeAvatar: 'dot' } }, async $ => {
   const ui = await $.ui.mount({ ...draw(COPY_SAMPLE), surface: 'terminal' })
   expect(await ui.findAll({ type: 'Button' })).toHaveLength(5)
   expect(await floatingCopies(ui)).toHaveLength(0)

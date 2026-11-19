@@ -42,9 +42,15 @@ const hasLink = (nodes: Inline[]): boolean => nodes.some(n => n.kind === 'link' 
 
 export const joinCellLines = (text: string): string => text.split('\n').map(line => line.trim()).filter(Boolean).join(' ')
 
+const textOnly = (node: unknown): boolean =>
+  node === null || node === undefined || typeof node !== 'object' ? true
+  : Array.isArray(node) ? node.every(textOnly)
+  : (node as { type?: unknown }).type === 'Text' && textOnly((node as { children?: unknown }).children)
+
 const bodyCell = (copyCell: CellCopy | undefined, nodes: Inline[], whole: Inline[], key: string, draw: (nodes: Inline[]) => RenderElement): RenderElement => {
-  const text = copyCell && !hasLink(whole) && inlineText(nodes).trim() ? joinCellLines(inlineText(whole)) : ''
-  return text ? copyCell!(text, key, draw(nodes)) : draw(nodes)
+  const shown = draw(nodes)
+  const text = copyCell && !hasLink(whole) && inlineText(nodes).trim() && textOnly(shown) ? joinCellLines(inlineText(whole)) : ''
+  return text ? copyCell!(text, key, shown) : shown
 }
 
 const headerRuns = (nodes: Inline[]): Inline[] =>
@@ -3084,7 +3090,7 @@ const youLabel = (el: ElementTable, style: Style, color: string | undefined): Re
   )
 }
 
-const claudeLabel = (el: ElementTable, style: Style): RenderElement => {
+const claudeLabel = (el: ElementTable, style: Style, robot: string): RenderElement => {
   const color = claudeColor(style.theme)
   const head = <el.Text color={color} bold>{claudeHead(style)}</el.Text>
   if (style.claudeAvatar !== 'robot' || !('Client' in el)) return head
@@ -3092,7 +3098,7 @@ const claudeLabel = (el: ElementTable, style: Style): RenderElement => {
   const { Client } = el as Elements['terminal']
   return (
     <el.Box flexDirection="row" alignItems="flex-end" columnGap={1}>
-      <Client key="claude-robot" module="./robot.tsx" props={robotColor === undefined ? {} : { color: robotColor }} />
+      <Client key={robot} module="./robot.tsx" props={robotColor === undefined ? {} : { color: robotColor }} />
       <el.Text color={color} bold>Claude</el.Text>
     </el.Box>
   )
@@ -3238,7 +3244,7 @@ const replyFrame = (el: ElementTable, style: Style, body: RenderElement, columns
   return <el.Box flexDirection="column" flexGrow={1} paddingX={1} borderStyle="round" borderColor={claudeColor(t)} borderDimColor backgroundColor={fill}>{body}</el.Box>
 }
 
-export const renderReply = (el: ElementTable, style: Style, drawn: RenderElement[], first: boolean, columns: number, corner: boolean): RenderElement => {
+export const renderReply = (el: ElementTable, style: Style, drawn: RenderElement[], first: boolean, columns: number, corner: boolean, robot = 'claude-robot'): RenderElement => {
   const room = corner ? <el.Box width={MARK} flexShrink={0} /> : null
   const body = <el.Box flexDirection="column" rowGap={1} flexGrow={1}>{drawn}</el.Box>
   if (replyLook(style) === 'off') {
@@ -3254,7 +3260,7 @@ export const renderReply = (el: ElementTable, style: Style, drawn: RenderElement
   }
   return (
     <el.Box key="msg" flexDirection="column">
-      {first && style.bubbleLabels !== 'off' ? claudeLabel(el, style) : null}
+      {first && style.bubbleLabels !== 'off' ? claudeLabel(el, style, robot) : null}
       {replyFrame(el, style, <el.Box flexDirection="row">{body}{room}</el.Box>, columns)}
     </el.Box>
   )

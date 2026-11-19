@@ -13,12 +13,12 @@ import { drawDiagrams } from './mermaid'
 import type { CellCopy, CopyButton, DrawPaste, Fold, Hues, TerminalEnv } from './render'
 import { MARK, bashEdits, lineCount, drawMath, drawsHyperlinks, editNotes, fileLinkRoot, fileRoot, hasShellOutput, instanceKey, isReadOnlyCall, leftToEngine, markerRoom, mirrored, noteTip, pasteLang, pathsToProbe, toolPathsToProbe, remember, rememberCall, renderBashEdits, renderBlocks, renderDiffCard, renderExpandedCall, renderFailure, renderReply, renderShellResult, renderToolGroup, renderToolRow, renderTurnDuration, renderUserPrompt, replyRoom, replyStyleFor, takesClickableMarks, takesEditorLinks, takesHttpLinks, takesMonoText, withoutBashEdits } from './render'
 import type { SetupStep } from './help'
-import { ESSENTIAL_STEPS, HINT, ISSUE_HINT, KEY_POINT_HINT, NARROW_PANE, narrowHint, SETUP_DONE, SETUP_ESSENTIALS_DONE, SETUP_MORE, SETUP_PANE_KEYS, SETUP_PANE_OPENED, THEME_PREVIEW, findSetup, helpText, languageShowcase, rtlShowcaseText, setupParts, setupSteps, setupText, showcaseText } from './help'
+import { ESSENTIAL_STEPS, HINT, ISSUE_HINT, KEY_POINT_HINT, NARROW_PANE, narrowHint, SETUP_DONE, SETUP_ESSENTIALS_DONE, SETUP_MORE, SETUP_PANE_KEYS, SETUP_PANE_OPENED, THEME_PREVIEW, findSetup, helpText, parseYouArgs, YOU_HINT, youSetupText, languageShowcase, rtlShowcaseText, setupParts, setupSteps, setupText, showcaseText } from './help'
 import { PRESET_NAMES } from './presets'
 import { desktopLook } from './desktop'
 import { textRows } from './layout'
 import type { Style } from './theme'
-import { RANDOM_THEMES, pickTheme, resolveStyle } from './theme'
+import { RANDOM_THEMES, labelName, pickTheme, resolveStyle } from './theme'
 import { DEFAULT_COLUMNS, MIN_COLUMNS } from './layout'
 import type { Terminal } from './rtl'
 import { ROW_MARK_TEXT, TERMINALS, hasRtl, opensLatin } from './rtl'
@@ -685,6 +685,49 @@ const setup = async ($: EngineInterface, picked: Picked, origin: PromptOrigin, s
   return `${saved}\n\n${afterSetupPick(steps, at)}`
 }
 
+const youKey = (key: 'youAvatar' | 'youName', value: string) => ({ key: `prismantis.${key}`, value })
+
+const saveYou = async ($: EngineInterface, key: 'youAvatar' | 'youName', value: string): Promise<string | undefined> =>
+  $.config.set(youKey(key, value)).then(
+    r => r.deny,
+    (e: unknown) => `${e instanceof Error ? e.message : String(e)}. Set "${key}": "${value}" by hand in the ${$.plugin.name} options under pluginConfigs in ~/.claude/settings.json, then restart.`,
+  )
+
+const youPicture = async ($: EngineInterface, style: Style, avatar: string): Promise<string | undefined> => {
+  await locate($, style)
+  if (await pictureOf($, avatar, style.home)) return undefined
+  const jpeg = /\.(jpe?g|heic|webp|gif)$/i.test(avatar)
+  return `Could not use ${avatar} as your picture: ${jpeg ? 'it is not a PNG' : 'no PNG under 2 MB is there'}. ${jpeg ? `Turn it into one first: sips -s format png ${avatar} --out ~/.claude/prismantis/avatar.png` : 'Check the path, or run /prismantis setup you for help.'}`
+}
+
+const setupYou = async ($: EngineInterface, style: Style, rest: string): Promise<string> => {
+  const args = parseYouArgs(rest)
+  if (!args) return youSetupText(style.youAvatar, style.youName)
+  const writes: ['youAvatar' | 'youName', string][] = args.reset ? [['youAvatar', ''], ['youName', '']] : []
+  if (!args.reset && args.avatar !== undefined) {
+    const refused = await youPicture($, style, args.avatar)
+    if (refused) return refused
+    writes.push(['youAvatar', args.avatar])
+  }
+  if (!args.reset && args.name !== undefined) writes.push(['youName', labelName(args.name)])
+  for (const [key, value] of writes) {
+    const deny = await saveYou($, key, value)
+    if (deny) return `Could not save ${key}: ${deny}`
+  }
+  if (args.reset) return 'Your picture is gone and your label says You again.'
+  return [args.avatar === undefined ? '' : `Picture set to ${args.avatar}.`, args.name === undefined ? '' : `Name set to ${labelName(args.name)}.`, 'Your next prompt shows it.'].filter(Boolean).join(' ')
+}
+
+const setupCommand = ($: EngineInterface, picked: Picked, style: Style, e: { args: string; origin: PromptOrigin }, name?: string, pick?: string): Promise<string> =>
+  name === 'you' ? setupYou($, style, e.args.trim().replace(/^setup\s+you\b/, '')) : setup($, picked, e.origin, name, pick)
+
+const hintYouOnce = async ($: EngineInterface, style: Style): Promise<void> => {
+  if (style.youAvatar || style.youName !== 'You') return
+  if (await $.store.get('youHinted')) return
+  await $.store.set('youHinted', true)
+  $.ui.toast(YOU_HINT)
+}
+
 const SETUP_GIT_STATUS = [
   'On branch main',
   'Changes not staged for commit:',
@@ -759,7 +802,7 @@ const SETUP_REPLY = 'The failing test passes now: `retries` was read before the 
 const replySample = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['resolve']>, style: Style, id: string, columns: number): RenderElement[] => {
   const framed = replyStyleFor(style, SETUP_REPLY)
   const drawn = drawMarkdown($, el, framed, parse(SETUP_REPLY, { numbers: style.highlightNumbers, paths: style.highlightPaths }), columns - replyRoom(framed))
-  return [<el.Box key={id} flexDirection="column">{renderReply(el, framed, drawn, true, columns, false)}</el.Box>]
+  return [<el.Box key={id} flexDirection="column">{renderReply(el, framed, drawn, true, columns, false, `${id}.robot`)}</el.Box>]
 }
 
 const SETUP_EDIT = {
@@ -823,7 +866,7 @@ const drawSetup = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['res
   const sample = (style: Style, value: string, id: string): RenderElement[] => samples[key]?.(style, value, id) ?? []
   const picks = found.parts.options.map(({ value, text }, i) => {
     const style = key === 'theme' ? { ...base, theme: resolveStyle({ ...options, theme: value }).theme } : { ...base, [key]: value }
-    return <el.Box key={`o${i}`} flexDirection="column">{md(style, text, 'm')}{sample(style, value, 'x')}</el.Box>
+    return <el.Box key={`o${i}`} flexDirection="column">{md(style, text, 'm')}{sample(style, value, `x${i}`)}</el.Box>
   })
   return [...(found.before ? [md(base, found.before, 'before')] : []), md(base, found.parts.head, 'head'), ...picks, md(base, found.parts.tail, 'tail')]
 }
@@ -943,8 +986,9 @@ export const register: Register = (on, options) => {
     void latexEngine($, latex)
     const started = await next(e)
     await paintDesktop($, options, picked.theme)
+    await hintYouOnce($, style).catch(() => undefined)
     await $.command
-      .register({ name: 'prismantis', description: 'Switch the prismantis theme, pick styles from samples, copy the last reply, or show the demo', argumentHint: '[theme [<name> | random] | setup [<step> [<pick>]] | copy [code] | demo]' })
+      .register({ name: 'prismantis', description: 'Switch the prismantis theme, pick styles from samples, copy the last reply, or show the demo', argumentHint: '[theme [<name> | random] | setup [<step> [<pick>] | you [<png>] [<name>]] | copy [code] | demo]' })
       .catch(() => undefined)
     return started
   })
@@ -959,7 +1003,7 @@ export const register: Register = (on, options) => {
     const [first, second, third] = e.args.trim().split(/\s+/)
     const [sub, name] = THEME_ARGS.includes(first ?? '') ? ['theme', first] : [first, second]
     if (sub === 'demo') return { text: showcaseText(PRESET_NAMES) + languageShowcase(await localeOf($, name)) }
-    if (sub === 'setup') return { text: await setup($, picked, e.origin, name, third) }
+    if (sub === 'setup') return { text: await setupCommand($, picked, style, e, name, third) }
     if (sub === 'copy') {
       if (name && name !== 'code') return { text: `Unknown copy target "${name}". Use /prismantis copy, or /prismantis copy code for the last code block.` }
       const reply = (await $.session.messages()).findLast(m => m.role === 'assistant' && m.text.trim())
