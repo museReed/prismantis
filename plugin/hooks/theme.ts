@@ -47,6 +47,7 @@ export type Style = {
   replyStyle: 'auto' | 'bubble' | 'solid' | 'framed' | 'off'
   bubbleLabels: 'large' | 'small' | 'off'
   youAvatar: string
+  diffLines: number
   youName: string
   claudeAvatar: 'dot' | 'robot'
   avatar?: string
@@ -104,6 +105,13 @@ const COLOR = /^(#[0-9a-f]{3}|#[0-9a-f]{6}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\
 const isColor = (value: unknown): value is string => typeof value === 'string' && COLOR.test(value.trim())
 
 export const longHex = (color: string): string => color.replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/i, '#$1$1$2$2$3$3')
+
+export const DIFF_LINES = 20
+
+export const lineLimit = (value: unknown): number => {
+  const n = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value) : Number.NaN
+  return Number.isInteger(n) && n >= 0 && n <= 400 ? n : DIFF_LINES
+}
 
 export const labelName = (value: unknown): string => {
   const name = typeof value === 'string' ? value.replace(/[\p{Cc}\p{Cf}]/gu, '').trim().slice(0, 24) : ''
@@ -163,6 +171,7 @@ export const resolveStyle = (options: PluginOptions): Style => {
     replyStyle: pick(options.replyStyle, ['auto', 'bubble', 'solid', 'framed', 'off'] as const, 'auto'),
     bubbleLabels: pick(options.bubbleLabels, ['large', 'small', 'off'] as const, 'large'),
     youAvatar: typeof options.youAvatar === 'string' ? options.youAvatar.trim() : '',
+    diffLines: lineLimit(options.diffLines),
     youName: labelName(options.youName),
     claudeAvatar: pick(options.claudeAvatar, ['dot', 'robot'] as const, 'dot'),
     clock: pick(options.clock, ['off', '24h', '12h'] as const, 'off'),

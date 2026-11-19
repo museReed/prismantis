@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.9",
+  "version": "0.49.0-muse.10",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -546,6 +546,12 @@
       "title": "Mermaid diagrams",
       "description": "Draw ```mermaid blocks as colored box art sized to the terminal. Off leaves the code as written.",
       "default": true
+    },
+    "diffLines": {
+      "type": "number",
+      "title": "Diff lines shown",
+      "description": "How many changed lines an edit diff shows before it folds behind a +N more lines button, and the most a new-file preview shows (at most 10). 0 folds every diff to its header row: the file and its +/- counts. 0 to 400; 20 by default.",
+      "default": 20
     },
     "folds": {
       "type": "string",

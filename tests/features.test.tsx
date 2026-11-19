@@ -3694,3 +3694,24 @@ test('terminalBackgroundColor shades fills from the terminal background instead 
   expect(resolveStyle({ theme: 'catppuccin-mocha', terminalBackgroundColor: '#abc' }).background).toBe('#aabbcc')
   for (const bad of ['', 'green', 'rgb(4,36,31)', '#12345']) expect(resolveStyle({ theme: 'catppuccin-mocha', terminalBackgroundColor: bad }).background).toBe(PRESET_BACKGROUNDS['catppuccin-mocha'])
 })
+
+test('diffLines 0 folds a short diff card to its header, and a press opens it', { options: { diffLines: 0 } }, async ($, on) => {
+  engine(on)
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const content = Array.from({ length: 3 }, (_, i) => `line ${i + 1}`).join('\n')
+    const ui = await $.ui.mount(editResult(surface, 'Write', overwrite('/tmp/short.txt', content)))
+    expect(await ui.find({ type: 'Text', text: /^\+3$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^line 1$/ })).toBeUndefined()
+    expect((await ui.find({ key: 'fold' }))?.props.label).toBe('+3 more lines')
+    await ui.press({ key: 'fold' })
+    expect(await ui.find({ type: 'Text', text: /^line 3$/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
+test('diffLines sets where a diff card folds, and bad values keep 20', () => {
+  expect(resolveStyle({}).diffLines).toBe(20)
+  expect(resolveStyle({ diffLines: 0 }).diffLines).toBe(0)
+  expect(resolveStyle({ diffLines: '5' }).diffLines).toBe(5)
+  for (const bad of [-1, 2.5, 401, 'many', '']) expect(resolveStyle({ diffLines: bad }).diffLines).toBe(20)
+})
