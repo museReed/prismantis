@@ -77,43 +77,23 @@ test('without cellCopy a table has no cell buttons', async ($, on) => {
   await ui.unmount()
 })
 
-test('cellCopy copies the pressed line, and the 📋 at the end of a multi-line cell copies the whole cell on one line', { options: { cellCopy: true } }, async ($, on) => {
+test('cellCopy copies the whole cell on one line from a press on any of its lines', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
   const copies = recordCopies(on)
   await startSession($, on)
   const ui = await $.ui.mount(reply('| a | b |\n|--|--|\n| one<br>two<br/>three | solo |'))
   const keys = (await cellButtons(ui)).map(keyOf)
-  const whole = keys.filter(k => k.endsWith('.whole.copy'))
-  expect(whole).toHaveLength(1)
-  expect(keys).toHaveLength(5)
+  expect(keys).toHaveLength(4)
   const line = (n: number, c: number) => keys.find(k => k.endsWith(`.${n}.${c}.copy`))!
-  await ui.press({ key: line(1, 0) })
-  await ui.press({ key: whole[0]! })
+  for (const n of [0, 1, 2]) await ui.press({ key: line(n, 0) })
   await ui.press({ key: line(0, 1) })
-  expect(copies).toEqual(['two', 'one two three', 'solo'])
-  const marks = await ui.findAll({ type: 'Text', text: /📋/ })
-  expect(marks.length).toBeGreaterThan(0)
-  await ui.unmount()
-})
-
-test('cellCopy adds no 📋 to a single-line cell', { options: { cellCopy: true } }, async ($, on) => {
-  clipboardEnv(on, 'other')
-  await startSession($, on)
-  const ui = await $.ui.mount(reply('| a |\n|--|\n| solo |'))
+  expect(copies).toEqual([...Array(3).fill('one two three'), 'solo'])
   expect(await ui.find({ type: 'Text', text: /📋/ })).toBeUndefined()
   await ui.unmount()
 })
 
-test('without cellCopy a multi-line cell has no 📋', async ($, on) => {
-  clipboardEnv(on, 'other')
-  await startSession($, on)
-  const ui = await $.ui.mount(reply('| a |\n|--|\n| one<br>two |'))
-  expect(await ui.find({ type: 'Text', text: /📋/ })).toBeUndefined()
-  await ui.unmount()
-})
-
-test('joinCellLines puts a space between lines except where two CJK letters meet', () => {
+test('joinCellLines joins lines with one space, CJK included, and drops blank lines', () => {
   expect(joinCellLines('9 欄 × 3 行\naccent 色\n400ms 換一格動畫')).toBe('9 欄 × 3 行 accent 色 400ms 換一格動畫')
-  expect(joinCellLines('第一行\n第二行。\n第三行')).toBe('第一行第二行。第三行')
+  expect(joinCellLines('第一行\n第二行')).toBe('第一行 第二行')
   expect(joinCellLines(' one \n\n two ')).toBe('one two')
 })

@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.14",
+  "version": "0.49.0-muse.15",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -582,7 +582,7 @@
     "cellCopy": {
       "type": "boolean",
       "title": "Copy table cells",
-      "description": "Click a table body cell to copy its plain text, with a toast. In a cell of several lines a click copies that line, and the 📋 at its end copies the whole cell on one line. Header cells, cells with links and right-to-left tables keep their usual behaviour. Each cell becomes a button, so very large tables cost a little more to draw. Needs copyButtons on.",
+      "description": "Click a table body cell to copy its plain text, with a toast. A click on any line of a cell of several lines copies the whole cell, its lines joined by a space. Header cells, cells with links and right-to-left tables keep their usual behaviour. Each cell becomes a button, so very large tables cost a little more to draw. Needs copyButtons on.",
       "default": false
     },
     "sectionCopyButtons": {
