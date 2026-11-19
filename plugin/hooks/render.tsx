@@ -3057,7 +3057,7 @@ const claudeHead = (style: Style): string => style.bubbleLabels === 'small' ? 'â
 
 const youColor = (theme: Theme): string | undefined => theme.promptBorder ?? theme.diffAdded ?? theme.accent
 
-export const AVATAR_COLUMNS = 2
+export const AVATAR_COLUMNS = 4
 
 export const AVATAR_ROWS = 2
 
