@@ -47,10 +47,11 @@ test('youAvatar keeps the plain label where pictures cannot draw or the file is 
   await plain.unmount()
 })
 
-test('claudeAvatar robot puts the robot client beside the Claude label in the terminal', { options: { claudeAvatar: 'robot', replyStyle: 'bubble' } }, async $ => {
+test('claudeAvatar robot puts the robot client beside the Claude label in the terminal', { options: { claudeAvatar: 'robot', replyStyle: 'bubble', theme: 'catppuccin-mocha' } }, async $ => {
   const ui = await $.ui.mount(reply('Done.'))
   const robot = await ui.find({ type: 'Client' })
   expect(String(robot?.props.module)).toMatch(/robot\.tsx$/)
+  expect(robot?.props.props).toEqual({ color: '#89b4fa' })
   expect(await ui.find({ type: 'Text', text: /^Claude$/ })).toBeDefined()
   await ui.unmount()
 })

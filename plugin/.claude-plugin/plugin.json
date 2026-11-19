@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.8",
+  "version": "0.49.0-muse.9",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -192,7 +192,7 @@
     "claudeAvatar": {
       "type": "string",
       "title": "Claude's avatar",
-      "description": "What stands beside the Claude label of Claude's first bubble. dot: the ⬤, as Claude Code draws it. robot: a small block-drawn robot that walks, blinks and waves, 9 columns by 3 rows, in the terminal only.",
+      "description": "What stands beside the Claude label of Claude's first bubble. dot: the ⬤, as Claude Code draws it. robot: a small block-drawn robot in the diagram color that walks, blinks and waves, 9 columns by 3 rows, in the terminal only.",
       "default": "dot",
       "options": ["dot", "robot"]
     },

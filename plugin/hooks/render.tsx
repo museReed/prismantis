@@ -3077,10 +3077,11 @@ const claudeLabel = (el: ElementTable, style: Style): RenderElement => {
   const color = claudeColor(style.theme)
   const head = <el.Text color={color} bold>{claudeHead(style)}</el.Text>
   if (style.claudeAvatar !== 'robot' || !('Client' in el)) return head
+  const robotColor = style.theme.diagram ?? color
   const { Client } = el as Elements['terminal']
   return (
     <el.Box flexDirection="row" alignItems="flex-end" columnGap={1}>
-      <Client key="claude-robot" module="./robot.tsx" props={color === undefined ? {} : { color }} />
+      <Client key="claude-robot" module="./robot.tsx" props={robotColor === undefined ? {} : { color: robotColor }} />
       <el.Text color={color} bold>Claude</el.Text>
     </el.Box>
   )
