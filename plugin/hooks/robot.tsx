@@ -3,12 +3,12 @@ import type { ClientModule } from 'claude-code'
 type Props = { color?: string }
 type State = { tick: number }
 
-const HEAD = ' █▀███▀█ '
-const BLINK = ' ███████ '
-const WAVE_HEAD = '▄█▀███▀█ '
-const FEET = '▀▀██▀██▀▀'
-const STEP = '▀██▀▀▀██▀'
-const WAVE_FEET = ' ▀██▀██▀▀'
+const HEAD = '▐▜▛▌'
+const BLINK = '▐██▌'
+const WAVE_HEAD = '▟▜▛▌'
+const FEET = '▜▀▀▛'
+const STEP = '▀▛▜▀'
+const WAVE_FEET = '▐▀▀▛'
 
 export const ROBOT_FRAMES: readonly (readonly [string, string])[] = [
   [HEAD, FEET],

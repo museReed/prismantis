@@ -2,6 +2,7 @@ import type { On } from 'claude-code'
 import { expect, mock, test } from 'claude-code/testing'
 
 import { width } from '../hooks/layout'
+import { AVATAR_COLUMNS, AVATAR_ROWS } from '../hooks/render'
 import { ROBOT_FRAMES } from '../hooks/robot'
 import { labelName, resolveStyle } from '../hooks/theme'
 
@@ -60,11 +61,11 @@ test('claudeAvatar dot draws no robot', { options: { replyStyle: 'bubble' } }, a
   await ui.unmount()
 })
 
-test('every robot frame is two rows of the same width, so the label never shifts', () => {
+test('every robot frame is the avatar size, so the two labels match and never shift', () => {
   expect(ROBOT_FRAMES.length).toBeGreaterThan(1)
   for (const frame of ROBOT_FRAMES) {
-    expect(frame).toHaveLength(2)
-    for (const line of frame) expect(width(line)).toBe(width(ROBOT_FRAMES[0]![0]))
+    expect(frame).toHaveLength(AVATAR_ROWS)
+    for (const line of frame) expect(width(line)).toBe(AVATAR_COLUMNS)
   }
 })
 
