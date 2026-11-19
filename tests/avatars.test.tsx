@@ -34,7 +34,7 @@ test('youAvatar draws the picture beside the You label in kitty', { options: { y
   const ui = await $.ui.mount(typed('hello'))
   const image = await ui.find({ type: 'Image' })
   expect(image?.props.source).toEqual({ png: PNG })
-  expect([image?.props.columns, image?.props.rows]).toEqual([4, 2])
+  expect([image?.props.columns, image?.props.rows]).toEqual([AVATAR_COLUMNS, AVATAR_ROWS])
   await ui.unmount()
 })
 
