@@ -75,3 +75,15 @@ test('without cellCopy a table has no cell buttons', async ($, on) => {
   expect(await cellButtons(ui)).toHaveLength(0)
   await ui.unmount()
 })
+
+test('cellCopy copies the whole cell from any line of a cell split with br', { options: { cellCopy: true } }, async ($, on) => {
+  clipboardEnv(on, 'other')
+  const copies = recordCopies(on)
+  await startSession($, on)
+  const ui = await $.ui.mount(reply('| a |\n|--|\n| one<br>two<br/>three |'))
+  const buttons = await cellButtons(ui)
+  expect(buttons).toHaveLength(3)
+  for (const button of buttons) await ui.press({ key: keyOf(button) })
+  expect(copies).toEqual(Array(3).fill('one\ntwo\nthree'))
+  await ui.unmount()
+})

@@ -1142,7 +1142,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
     return <Text key={k}>{renderInline(el, style, terminalLine(parts), k)}</Text>
   }
 
-  const row = (cells: Inline[][], k: string, isHeader: boolean, border: (k: string, text: string) => RenderElement = bar, at?: number) => drawsTextRows(style, rtl) ? terminalRow(cells, k, isHeader) : (
+  const row = (cells: Inline[][], k: string, isHeader: boolean, border: (k: string, text: string) => RenderElement = bar, at?: number, whole: Inline[][] = cells) => drawsTextRows(style, rtl) ? terminalRow(cells, k, isHeader) : (
     <Box key={k} flexDirection="row" columnGap={columnGap} alignItems="stretch" {...laidLine(style)}>
       {!box && lead(k)}
       {box && border(`${k}.l`, wall('│ '))}
@@ -1160,7 +1160,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
               ?? (isHeader
                 ? <Text bold color={t.tableHeader}>{runs.some(n => n.kind === 'footnote') ? renderInline(el, style, runs, `${k}.${c}`) : inlineText(runs)}</Text>
                 : mirror && inlineText(content).trim() === '' ? <Text>{' '.repeat(w)}</Text>
-                : bodyCell(copyCell, cells[c]!, `${k}.${c}.copy`, <Text {...face}>{renderInline(el, style, content, `${k}.${c}`, numberFace)}</Text>))}
+                : bodyCell(copyCell, whole[c]!, `${k}.${c}.copy`, <Text {...face}>{renderInline(el, style, content, `${k}.${c}`, numberFace)}</Text>))}
           </Box>
         )
         return [i > 0 && (box ? border(`${k}.${c}s`, wall(' │ ')) : spacer(`${k}.${c}g`)), cellBox]
@@ -1178,7 +1178,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
       return wrapInline(isHeader ? headerRuns(content) : content, w)
     })
     return Array.from({ length: Math.max(...wrapped.map(l => l.length)) }, (_, i) =>
-      row(wrapped.map(l => l[i] ?? []), `${k}.${i}`, isHeader, undefined, at))
+      row(wrapped.map(l => l[i] ?? []), `${k}.${i}`, isHeader, undefined, at, cells))
   }
 
   if (box) {
