@@ -47,6 +47,7 @@ export type Style = {
   replyStyle: 'auto' | 'bubble' | 'solid' | 'framed' | 'off'
   bubbleLabels: 'large' | 'small' | 'off'
   youAvatar: string
+  youName: string
   claudeAvatar: 'dot' | 'robot'
   avatar?: string
   clock: Clock
@@ -104,6 +105,11 @@ const isColor = (value: unknown): value is string => typeof value === 'string' &
 
 export const longHex = (color: string): string => color.replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/i, '#$1$1$2$2$3$3')
 
+export const labelName = (value: unknown): string => {
+  const name = typeof value === 'string' ? value.replace(/[\p{Cc}\p{Cf}]/gu, '').trim().slice(0, 24) : ''
+  return name || 'You'
+}
+
 export const terminalBackground = (value: unknown): string | undefined => {
   const hex = typeof value === 'string' ? value.trim().replace(/^#?/, '#') : ''
   return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex) ? longHex(hex).toLowerCase() : undefined
@@ -157,6 +163,7 @@ export const resolveStyle = (options: PluginOptions): Style => {
     replyStyle: pick(options.replyStyle, ['auto', 'bubble', 'solid', 'framed', 'off'] as const, 'auto'),
     bubbleLabels: pick(options.bubbleLabels, ['large', 'small', 'off'] as const, 'large'),
     youAvatar: typeof options.youAvatar === 'string' ? options.youAvatar.trim() : '',
+    youName: labelName(options.youName),
     claudeAvatar: pick(options.claudeAvatar, ['dot', 'robot'] as const, 'dot'),
     clock: pick(options.clock, ['off', '24h', '12h'] as const, 'off'),
     toolStyle: pick(options.toolStyle, ['chat', 'tree-dim', 'tree-bold', 'classic'] as const, 'chat'),

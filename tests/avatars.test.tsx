@@ -3,7 +3,7 @@ import { expect, mock, test } from 'claude-code/testing'
 
 import { width } from '../hooks/layout'
 import { ROBOT_FRAMES } from '../hooks/robot'
-import { resolveStyle } from '../hooks/theme'
+import { labelName, resolveStyle } from '../hooks/theme'
 
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAKAAAABQAQAAAAC2JkOZAAAAFklEQVR42mNgGAWjYBSMglEwCgYeAAAGkAAB8Q2GVgAAAABJRU5ErkJggg=='
 const KITTY = { TERM: 'xterm-kitty', HOME: '/home/me' }
@@ -60,10 +60,27 @@ test('claudeAvatar dot draws no robot', { options: { replyStyle: 'bubble' } }, a
   await ui.unmount()
 })
 
-test('every robot frame is three rows of the same width, so the label never shifts', () => {
+test('every robot frame is two rows of the same width, so the label never shifts', () => {
   expect(ROBOT_FRAMES.length).toBeGreaterThan(1)
   for (const frame of ROBOT_FRAMES) {
-    expect(frame).toHaveLength(3)
+    expect(frame).toHaveLength(2)
     for (const line of frame) expect(width(line)).toBe(width(ROBOT_FRAMES[0]![0]))
   }
+})
+
+test('youName names the prompt label, trimmed and capped, with You as the fallback', () => {
+  expect(resolveStyle({}).youName).toBe('You')
+  expect(resolveStyle({ youName: ' Reed ' }).youName).toBe('Reed')
+  expect(labelName('\u001b[31mReed\u200e')).toBe('[31mReed')
+  expect(labelName('x'.repeat(40))).toHaveLength(24)
+  for (const blank of ['', '   ', 7, undefined]) expect(labelName(blank)).toBe('You')
+})
+
+test('youName replaces You beside the avatar', { options: { youAvatar: '~/me.png', youName: 'Reed' } }, async ($, on) => {
+  mock.env(on, KITTY)
+  avatarFile(on, '/home/me/me.png')
+  const ui = await $.ui.mount(typed('hello'))
+  expect(await ui.find({ type: 'Text', text: /^Reed$/ })).toBeDefined()
+  expect((await ui.find({ type: 'Image' }))?.props.alt).toBe('Reed')
+  await ui.unmount()
 })

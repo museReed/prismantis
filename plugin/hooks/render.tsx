@@ -3051,7 +3051,7 @@ const CHAT_SHARE = 0.75
 
 const headDot = (style: Pick<Style, 'smallDot'>): string => (style.smallDot ? '●' : '⬤')
 
-const youHead = (style: Style): string => style.bubbleLabels === 'small' ? 'You ● ' : `You  ${headDot(style)} `
+const youHead = (style: Style): string => style.bubbleLabels === 'small' ? `${style.youName} ● ` : `${style.youName}  ${headDot(style)} `
 
 const claudeHead = (style: Style): string => style.bubbleLabels === 'small' ? '● Claude' : `${headDot(style)}  Claude`
 
@@ -3067,8 +3067,8 @@ const youLabel = (el: ElementTable, style: Style, color: string | undefined): Re
   const { Image } = el as Elements['terminal']
   return (
     <el.Box flexDirection="row" alignItems="flex-end" columnGap={1}>
-      <el.Text color={color} bold>You</el.Text>
-      <Image source={{ png: style.avatar }} columns={AVATAR_COLUMNS} rows={AVATAR_ROWS} alt="You" />
+      <el.Text color={color} bold>{style.youName}</el.Text>
+      <Image source={{ png: style.avatar }} columns={AVATAR_COLUMNS} rows={AVATAR_ROWS} alt={style.youName} />
     </el.Box>
   )
 }
