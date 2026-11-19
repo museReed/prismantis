@@ -1,4 +1,4 @@
-import { expect, mock, test } from 'claude-code/testing'
+import { expect, test } from 'claude-code/testing'
 
 import { joinCellLines } from '../hooks/render'
 import { resolveStyle } from '../hooks/theme'
@@ -27,7 +27,6 @@ test('cellCopy is off unless asked', () => {
 
 test('cellCopy makes each body cell a button that copies its plain text', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
-  mock.clock(on)
   const copies = recordCopies(on)
   const toasts = recordToasts(on)
   await startSession($, on)
@@ -52,7 +51,6 @@ test('cellCopy leaves header cells and cells with links alone', { options: { cel
 
 test('cellCopy reaches a table inside a quote', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
-  mock.clock(on)
   const copies = recordCopies(on)
   await startSession($, on)
   const ui = await $.ui.mount(reply('> | a |\n> |--|\n> | inner |'))
@@ -79,25 +77,38 @@ test('without cellCopy a table has no cell buttons', async ($, on) => {
   await ui.unmount()
 })
 
-test('cellCopy copies the pressed line, and a second press within half a second copies the whole cell on one line', { options: { cellCopy: true } }, async ($, on) => {
+test('cellCopy copies the pressed line, and the 📋 at the end of a multi-line cell copies the whole cell on one line', { options: { cellCopy: true } }, async ($, on) => {
   clipboardEnv(on, 'other')
-  const clock = mock.clock(on)
   const copies = recordCopies(on)
   await startSession($, on)
   const ui = await $.ui.mount(reply('| a | b |\n|--|--|\n| one<br>two<br/>three | solo |'))
   const keys = (await cellButtons(ui)).map(keyOf)
-  expect(keys).toHaveLength(4)
-  const [one, solo, two] = [keys.find(k => k.includes('.0.0.')), keys.find(k => k.includes('.0.1.')), keys.find(k => k.includes('.1.0.'))]
-  await ui.press({ key: two! })
-  await clock.advance(1000)
-  await ui.press({ key: one! })
-  await clock.advance(200)
-  await ui.press({ key: two! })
-  await clock.advance(1000)
-  await ui.press({ key: one! })
-  await clock.advance(200)
-  await ui.press({ key: solo! })
-  expect(copies).toEqual(['two', 'one', 'one two three', 'one', 'solo'])
+  const whole = keys.filter(k => k.endsWith('.whole.copy'))
+  expect(whole).toHaveLength(1)
+  expect(keys).toHaveLength(5)
+  const line = (n: number, c: number) => keys.find(k => k.endsWith(`.${n}.${c}.copy`))!
+  await ui.press({ key: line(1, 0) })
+  await ui.press({ key: whole[0]! })
+  await ui.press({ key: line(0, 1) })
+  expect(copies).toEqual(['two', 'one two three', 'solo'])
+  const marks = await ui.findAll({ type: 'Text', text: /📋/ })
+  expect(marks.length).toBeGreaterThan(0)
+  await ui.unmount()
+})
+
+test('cellCopy adds no 📋 to a single-line cell', { options: { cellCopy: true } }, async ($, on) => {
+  clipboardEnv(on, 'other')
+  await startSession($, on)
+  const ui = await $.ui.mount(reply('| a |\n|--|\n| solo |'))
+  expect(await ui.find({ type: 'Text', text: /📋/ })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('without cellCopy a multi-line cell has no 📋', async ($, on) => {
+  clipboardEnv(on, 'other')
+  await startSession($, on)
+  const ui = await $.ui.mount(reply('| a |\n|--|\n| one<br>two |'))
+  expect(await ui.find({ type: 'Text', text: /📋/ })).toBeUndefined()
   await ui.unmount()
 })
 

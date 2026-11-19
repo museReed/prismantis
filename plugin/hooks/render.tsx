@@ -46,10 +46,22 @@ export const joinCellLines = (text: string): string =>
   text.split('\n').map(line => line.trim()).filter(Boolean)
     .reduce((out, line) => (out && !(CJK_EDGE.test(out.at(-1)!) && CJK_EDGE.test(line[0]!)) ? `${out} ${line}` : out + line), '')
 
-const bodyCell = (copyCell: CellCopy | undefined, nodes: Inline[], whole: Inline[], key: string, cell: string, shown: RenderElement): RenderElement => {
-  if (!copyCell || hasLink(whole)) return shown
-  const line = joinCellLines(inlineText(nodes))
-  return line ? copyCell({ line, whole: joinCellLines(inlineText(whole)), cell }, key, shown) : shown
+const WHOLE_MARK = '📋'
+const MARK_TAIL = /\s*📋$/u
+
+const markWholeCells = (block: Extract<Block, { kind: 'table' }>, copyCell: CellCopy | undefined): Extract<Block, { kind: 'table' }> =>
+  copyCell ? { ...block, rows: block.rows.map(row => row.map(cell => (inlineText(cell).trim().includes('\n') && !hasLink(cell) ? [...cell, { kind: 'text' as const, text: ` ${WHOLE_MARK}` }] : cell))) } : block
+
+const bodyCell = (el: ElementTable, copyCell: CellCopy | undefined, nodes: Inline[], whole: Inline[], key: string, draw: (nodes: Inline[]) => RenderElement): RenderElement => {
+  if (!copyCell || hasLink(whole)) return draw(nodes)
+  const text = inlineText(nodes)
+  const tail = text.match(MARK_TAIL)?.[0] ?? ''
+  const own = tail ? sliceInline(nodes, 0, text.length - tail.length) : nodes
+  const line = joinCellLines(inlineText(own))
+  const drawn = line ? copyCell(line, key, draw(own)) : draw(own)
+  if (!tail) return drawn
+  const all = copyCell(joinCellLines(inlineText(whole)).replace(MARK_TAIL, ''), `${key.slice(0, -'.copy'.length)}.whole.copy`, draw([{ kind: 'text', text: tail }]))
+  return <el.Box key={key.slice(0, -'.copy'.length)}>{line ? drawn : null}{all}</el.Box>
 }
 
 const headerRuns = (nodes: Inline[]): Inline[] =>
@@ -1082,8 +1094,9 @@ const tableEdges = (style: Style, block: Extract<Block, { kind: 'table' }>, rtl:
 const heavyBetween = (style: Style, buckets: (Bucket | undefined)[], group: Group | undefined, i: number): boolean =>
   statusHeavy(style.statusMatrix, buckets, i) || groupHeavy(style.groupTable, group, i)
 
-const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kind: 'table' }>, columns: number, key: string, rtl: boolean, tip?: Tip, copyCell?: CellCopy) => {
+const renderTable = (el: ElementTable, style: Style, source: Extract<Block, { kind: 'table' }>, columns: number, key: string, rtl: boolean, tip?: Tip, copyCell?: CellCopy) => {
   const { Box, Text } = el
+  const block = markWholeCells(source, copyCell)
   const t = style.theme
   const group = groupOf(block, style.groupTable, style.statusMatrix === 'group')
   const drawn = { ...block, rows: groupRows(block, group, style.groupTable) }
@@ -1093,7 +1106,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
   const status = statusOf(block, style.statusMatrix, plan.stack && !texts)
   const layout = statusRows(drawn, status, style.statusMatrix)
   const { natural, words, widths, box, gap } = plan
-  if (plan.stack) return stackedTable(el, style, block, columns, key, tip)
+  if (plan.stack) return stackedTable(el, style, source, columns, key, tip)
   const test = testReport(el, t, block, style.testMatrix, `${key}.t`)
   const foot = test ? undefined : statusFooter(el, t, status, style.statusMatrix, `${key}.f`)
   const bench = benchOf(block, style.benchTable)
@@ -1149,7 +1162,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
     return <Text key={k}>{renderInline(el, style, terminalLine(parts), k)}</Text>
   }
 
-  const row = (cells: Inline[][], k: string, isHeader: boolean, border: (k: string, text: string) => RenderElement = bar, at?: number, whole: { cells: Inline[][]; key: string } = { cells, key: k }) => drawsTextRows(style, rtl) ? terminalRow(cells, k, isHeader) : (
+  const row = (cells: Inline[][], k: string, isHeader: boolean, border: (k: string, text: string) => RenderElement = bar, at?: number, whole: Inline[][] = cells) => drawsTextRows(style, rtl) ? terminalRow(cells, k, isHeader) : (
     <Box key={k} flexDirection="row" columnGap={columnGap} alignItems="stretch" {...laidLine(style)}>
       {!box && lead(k)}
       {box && border(`${k}.l`, wall('│ '))}
@@ -1167,7 +1180,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
               ?? (isHeader
                 ? <Text bold color={t.tableHeader}>{runs.some(n => n.kind === 'footnote') ? renderInline(el, style, runs, `${k}.${c}`) : inlineText(runs)}</Text>
                 : mirror && inlineText(content).trim() === '' ? <Text>{' '.repeat(w)}</Text>
-                : bodyCell(copyCell, cells[c]!, whole.cells[c]!, `${k}.${c}.copy`, `${whole.key}.${c}`, <Text {...face}>{renderInline(el, style, content, `${k}.${c}`, numberFace)}</Text>))}
+                : bodyCell(el, copyCell, content, whole[c]!, `${k}.${c}.copy`, nodes => <Text {...face}>{renderInline(el, style, nodes, `${k}.${c}`, numberFace)}</Text>))}
           </Box>
         )
         return [i > 0 && (box ? border(`${k}.${c}s`, wall(' │ ')) : spacer(`${k}.${c}g`)), cellBox]
@@ -1185,7 +1198,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
       return wrapInline(isHeader ? headerRuns(content) : content, w)
     })
     return Array.from({ length: Math.max(...wrapped.map(l => l.length)) }, (_, i) =>
-      row(wrapped.map(l => l[i] ?? []), `${k}.${i}`, isHeader, undefined, at, { cells, key: k }))
+      row(wrapped.map(l => l[i] ?? []), `${k}.${i}`, isHeader, undefined, at, cells))
   }
 
   if (box) {
@@ -1278,7 +1291,7 @@ const leadInline = (blocks: Block[]): Inline[] => {
 }
 
 const renderNested = (el: ElementTable, style: Style, blocks: Block[], columns: number, key: string, copy?: CopyButton, fold?: Fold, tip?: Tip) =>
-  renderBlocks(el, style, blocks, columns, drawMath(el, style, blocks), copy && Object.assign((text: string | (() => string), id: string, label?: string, html?: (() => string) | 'png') => copy(text, `${key}.${id}`, label, html), { cell: copy.cell && ((text: CellText, id: string, shown: RenderElement) => copy.cell!({ ...text, cell: `${key}.${text.cell}` }, `${key}.${id}`, shown)) }), fold && ((id, hidden, k) => fold(id, hidden, `${key}.${k}`)), tip)
+  renderBlocks(el, style, blocks, columns, drawMath(el, style, blocks), copy && Object.assign((text: string | (() => string), id: string, label?: string, html?: (() => string) | 'png') => copy(text, `${key}.${id}`, label, html), { cell: copy.cell && ((text: string, id: string, shown: RenderElement) => copy.cell!(text, `${key}.${id}`, shown)) }), fold && ((id, hidden, k) => fold(id, hidden, `${key}.${k}`)), tip)
 
 const quoteBar = (el: ElementTable, text: string, color: string | undefined, lines: number) =>
   lines <= 1 ? <el.Text color={color}>{text}</el.Text> : clip(el, width(text), <el.Text color={color}>{Array.from({ length: lines }, () => text).join('\n')}</el.Text>)
@@ -1433,9 +1446,7 @@ const renderList = (el: ElementTable, style: Style, block: Extract<Block, { kind
   )
 }
 
-export type CellText = { line: string; whole: string; cell: string }
-
-export type CellCopy = (text: CellText, key: string, shown: RenderElement) => RenderElement
+export type CellCopy = (text: string, key: string, shown: RenderElement) => RenderElement
 
 export type CopyButton = ((text: string | (() => string), key: string, label?: string, rich?: (() => string) | 'png', hues?: () => Hues) => RenderElement | null) & { cell?: CellCopy }
 export type Hues = Ink[][]
