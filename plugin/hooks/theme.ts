@@ -48,6 +48,7 @@ export type Style = {
   bubbleLabels: 'large' | 'small' | 'off'
   youAvatar: string
   diffLines: number
+  cellCopy: boolean
   youName: string
   claudeAvatar: 'dot' | 'robot'
   avatar?: string
@@ -172,6 +173,7 @@ export const resolveStyle = (options: PluginOptions): Style => {
     bubbleLabels: pick(options.bubbleLabels, ['large', 'small', 'off'] as const, 'large'),
     youAvatar: typeof options.youAvatar === 'string' ? options.youAvatar.trim() : '',
     diffLines: lineLimit(options.diffLines),
+    cellCopy: options.cellCopy === true,
     youName: labelName(options.youName),
     claudeAvatar: pick(options.claudeAvatar, ['dot', 'robot'] as const, 'dot'),
     clock: pick(options.clock, ['off', '24h', '12h'] as const, 'off'),

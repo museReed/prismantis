@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.10",
+  "version": "0.49.0-muse.11",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -578,6 +578,12 @@
       "title": "Copy buttons on lists and quotes",
       "description": "Put a copy button on lists, quotes and alerts. Off keeps the buttons on code blocks, tables, diagrams and whole replies. Needs copyButtons on.",
       "default": true
+    },
+    "cellCopy": {
+      "type": "boolean",
+      "title": "Copy table cells",
+      "description": "Click a table body cell to copy its plain text, with a toast. Header cells, cells with links and right-to-left tables keep their usual behaviour. Each cell becomes a button, so very large tables cost a little more to draw. Needs copyButtons on.",
+      "default": false
     },
     "sectionCopyButtons": {
       "type": "boolean",

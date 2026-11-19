@@ -40,6 +40,11 @@ const sliceInline = (nodes: Inline[], from: number, to: number): Inline[] => {
 
 const hasLink = (nodes: Inline[]): boolean => nodes.some(n => n.kind === 'link' || ('children' in n && hasLink(n.children)))
 
+const bodyCell = (copyCell: CellCopy | undefined, nodes: Inline[], key: string, shown: RenderElement): RenderElement => {
+  const text = copyCell && !hasLink(nodes) ? inlineText(nodes).trim() : ''
+  return text ? copyCell!(text, key, shown) : shown
+}
+
 const headerRuns = (nodes: Inline[]): Inline[] =>
   nodes.flatMap(n => (n.kind === 'footnote' ? [n] : 'children' in n ? headerRuns(n.children) : [{ kind: 'text' as const, text: n.text }]))
     .reduce<Inline[]>((out, n) => {
@@ -1070,7 +1075,7 @@ const tableEdges = (style: Style, block: Extract<Block, { kind: 'table' }>, rtl:
 const heavyBetween = (style: Style, buckets: (Bucket | undefined)[], group: Group | undefined, i: number): boolean =>
   statusHeavy(style.statusMatrix, buckets, i) || groupHeavy(style.groupTable, group, i)
 
-const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kind: 'table' }>, columns: number, key: string, rtl: boolean, tip?: Tip) => {
+const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kind: 'table' }>, columns: number, key: string, rtl: boolean, tip?: Tip, copyCell?: CellCopy) => {
   const { Box, Text } = el
   const t = style.theme
   const group = groupOf(block, style.groupTable, style.statusMatrix === 'group')
@@ -1155,7 +1160,7 @@ const renderTable = (el: ElementTable, style: Style, block: Extract<Block, { kin
               ?? (isHeader
                 ? <Text bold color={t.tableHeader}>{runs.some(n => n.kind === 'footnote') ? renderInline(el, style, runs, `${k}.${c}`) : inlineText(runs)}</Text>
                 : mirror && inlineText(content).trim() === '' ? <Text>{' '.repeat(w)}</Text>
-                : <Text {...face}>{renderInline(el, style, content, `${k}.${c}`, numberFace)}</Text>)}
+                : bodyCell(copyCell, cells[c]!, `${k}.${c}.copy`, <Text {...face}>{renderInline(el, style, content, `${k}.${c}`, numberFace)}</Text>))}
           </Box>
         )
         return [i > 0 && (box ? border(`${k}.${c}s`, wall(' │ ')) : spacer(`${k}.${c}g`)), cellBox]
@@ -1266,7 +1271,7 @@ const leadInline = (blocks: Block[]): Inline[] => {
 }
 
 const renderNested = (el: ElementTable, style: Style, blocks: Block[], columns: number, key: string, copy?: CopyButton, fold?: Fold, tip?: Tip) =>
-  renderBlocks(el, style, blocks, columns, drawMath(el, style, blocks), copy && ((text, id, label, html) => copy(text, `${key}.${id}`, label, html)), fold && ((id, hidden, k) => fold(id, hidden, `${key}.${k}`)), tip)
+  renderBlocks(el, style, blocks, columns, drawMath(el, style, blocks), copy && Object.assign((text: string | (() => string), id: string, label?: string, html?: (() => string) | 'png') => copy(text, `${key}.${id}`, label, html), { cell: copy.cell && ((text: string, id: string, shown: RenderElement) => copy.cell!(text, `${key}.${id}`, shown)) }), fold && ((id, hidden, k) => fold(id, hidden, `${key}.${k}`)), tip)
 
 const quoteBar = (el: ElementTable, text: string, color: string | undefined, lines: number) =>
   lines <= 1 ? <el.Text color={color}>{text}</el.Text> : clip(el, width(text), <el.Text color={color}>{Array.from({ length: lines }, () => text).join('\n')}</el.Text>)
@@ -1421,7 +1426,9 @@ const renderList = (el: ElementTable, style: Style, block: Extract<Block, { kind
   )
 }
 
-export type CopyButton = (text: string | (() => string), key: string, label?: string, rich?: (() => string) | 'png', hues?: () => Hues) => RenderElement | null
+export type CellCopy = (text: string, key: string, shown: RenderElement) => RenderElement
+
+export type CopyButton = ((text: string | (() => string), key: string, label?: string, rich?: (() => string) | 'png', hues?: () => Hues) => RenderElement | null) & { cell?: CellCopy }
 export type Hues = Ink[][]
 export type Drawn = Map<number, { element?: RenderElement; art?: string; hues?: () => Hues; note?: string }>
 export type FoldLook = { label?: string; face?: (folded: boolean) => RenderElement }
@@ -1615,7 +1622,7 @@ export const renderBlocks = (el: ElementTable, style: Style, blocks: Block[], co
       case 'list':
         return renderList(el, style, block, room(b), key, copy, fold, tip)
       case 'table':
-        return renderTable(el, style, block, room(b), key, rtlTables[b]!, tip)
+        return renderTable(el, style, block, room(b), key, rtlTables[b]!, tip, copy?.cell)
       case 'notes':
         return (
           <Box key={key} flexDirection="column">
