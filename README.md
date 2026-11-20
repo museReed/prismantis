@@ -59,6 +59,36 @@ claude plugin uninstall prismantis@prismantis
 
 For LaTeX math, install RaTeX's renderer and set `latex` to `true`; see [LaTeX math](#latex-math). Until then formulas draw as text.
 
+### The muse-custom fork
+
+This fork keeps prismantis as it is and changes a few defaults, so it looks ready the moment it is installed. To install it in place of the original:
+
+```bash
+claude plugin marketplace add https://github.com/museReed/prismantis.git#muse-custom
+claude plugin install prismantis@prismantis
+```
+
+What a fresh install gets:
+
+| Setting | Default here |
+|---|---|
+| `theme` | `catppuccin-mocha` |
+| `claudeAvatar` | `robot`: a small robot that moves beside the Claude label |
+| `cellCopy` | on: a click on any line of a table cell copies the whole cell, its lines joined by a space |
+| First session | one toast that points to `/prismantis setup you`, shown once |
+
+To put your own picture and name on your prompt bubble, see [Your picture and name](#your-picture-and-name):
+
+```text
+/prismantis setup you ~/.claude/prismantis/avatar.png Ada
+```
+
+To update the fork, run this, then `/reload-plugins`:
+
+```bash
+claude plugin marketplace update prismantis && claude plugin update prismantis@prismantis
+```
+
 ### Codex
 
 prismantis also runs in Codex, with themes for code, prose, tables and diagrams and the same session note. Install, what works today, and the Codex issue it waits on for parity: [codex/README.md](codex/README.md).
