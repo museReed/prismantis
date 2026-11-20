@@ -59,31 +59,33 @@ claude plugin uninstall prismantis@prismantis
 
 For LaTeX math, install RaTeX's renderer and set `latex` to `true`; see [LaTeX math](#latex-math). Until then formulas draw as text.
 
-### The muse-custom fork
+### muse-custom 分支
 
-This fork keeps prismantis as it is and changes a few defaults, so it looks ready the moment it is installed. To install it in place of the original:
+這個 fork 沿用原本的 prismantis，只改了幾個預設值，裝好就能直接用。要用它取代原版，執行：
 
 ```bash
 claude plugin marketplace add https://github.com/museReed/prismantis.git#muse-custom
 claude plugin install prismantis@prismantis
 ```
 
-What a fresh install gets:
+剛裝好時的設定：
 
-| Setting | Default here |
+| 設定 | 這裡的預設 |
 |---|---|
 | `theme` | `catppuccin-mocha` |
-| `claudeAvatar` | `robot`: a small robot that moves beside the Claude label |
-| `cellCopy` | on: a click on any line of a table cell copies the whole cell, its lines joined by a space |
-| First session | one toast that points to `/prismantis setup you`, shown once |
+| `claudeAvatar` | `robot`：Claude 標籤旁邊有一個會動的小機器人 |
+| `cellCopy` | 開啟：點表格格子的任一行，就複製整格內容，多行之間用一個空白連成一行 |
+| 第一次啟動 | 跳出一次提示，告訴你可以用 `/prismantis setup you`，之後不再出現 |
 
-To put your own picture and name on your prompt bubble, see [Your picture and name](#your-picture-and-name):
+要在自己的提問旁放上大頭照和名字，請看 [Your picture and name](#your-picture-and-name)：
 
 ```text
 /prismantis setup you ~/.claude/prismantis/avatar.png Ada
 ```
 
-To update the fork, run this, then `/reload-plugins`:
+圖片要是 PNG。路徑裡有空格就加引號。只改名字可以寫 `/prismantis setup you Ada`，要清掉兩者就寫 `/prismantis setup you reset`。
+
+要更新這個 fork，執行下面的指令，再執行 `/reload-plugins`：
 
 ```bash
 claude plugin marketplace update prismantis && claude plugin update prismantis@prismantis
