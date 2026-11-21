@@ -85,6 +85,16 @@ claude plugin install prismantis@prismantis
 
 圖片要是 PNG。路徑裡有空格就加引號。只改名字可以寫 `/prismantis setup you Ada`，要清掉兩者就寫 `/prismantis setup you reset`。
 
+圖片的條件：
+
+- PNG 檔，小於 2 MB，長寬大致相等。
+- 四個角是透明的，畫出來就是圓形；正方形的圖會連角一起畫出來。
+- 只有 kitty 和 Ghostty 會顯示圖片，其他終端機只顯示名字。
+
+在 macOS 上，[Your picture and name](#your-picture-and-name) 裡有一段不用另外安裝東西的 `swift` 腳本，能把任何照片從中間裁成 256 × 256 的圓形 PNG。把最後一行的 `~/Pictures/me.jpg` 換成自己的照片路徑就可以。其他系統用任何影像編輯軟體把照片裁成正方形、匯出成 PNG，再用 `/prismantis setup you` 指到那個檔案。
+
+這個設定的提示只會出現一次：第一次啟動時，如果大頭照和名字都還沒設，prismantis 會提醒你。
+
 要更新這個 fork，執行下面的指令，再執行 `/reload-plugins`：
 
 ```bash
