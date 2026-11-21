@@ -1,6 +1,6 @@
 {
   "name": "prismantis",
-  "version": "0.49.0-muse.17",
+  "version": "0.49.0-muse.18",
   "description": "Colorful, themeable rendering for Claude Code replies: tables, headings, code, numbers, paths and links.",
   "author": {
     "name": "Nahum Litvin",
@@ -589,7 +589,7 @@
       "type": "boolean",
       "title": "Choice buttons",
       "description": "Draw the options Claude lists under a question as buttons: `- ( ) option` picks one of its group, `- [ ] option` toggles. A press writes the question and the picked options at the top of the prompt box, above what you typed, and sends nothing. Each prompt carries a model-only note, about 130 tokens, that asks Claude to write options this way.",
-      "default": true
+      "default": false
     },
     "sectionCopyButtons": {
       "type": "boolean",

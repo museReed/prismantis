@@ -34,9 +34,10 @@ const promptBox = (on: Parameters<typeof startSession>[1], typed = '', isFilled 
 
 const settle = () => new Promise(r => (globalThis as unknown as { setTimeout: (f: unknown, ms: number) => void }).setTimeout(r, 20))
 
-test('choiceButtons is on unless turned off', () => {
-  expect(resolveStyle({}).choiceButtons).toBe(true)
-  expect(resolveStyle({ choiceButtons: false }).choiceButtons).toBe(false)
+test('choiceButtons is off unless turned on', () => {
+  expect(resolveStyle({}).choiceButtons).toBe(false)
+  expect(resolveStyle({ choiceButtons: true }).choiceButtons).toBe(true)
+  expect(resolveStyle({ choiceButtons: 'yes' }).choiceButtons).toBe(false)
 })
 
 test('a list item that opens with ( ) is a choice, and one with [ ] stays a task', () => {
@@ -73,7 +74,7 @@ test('the draft keeps what the person typed under the picked lines', () => {
   expect(mergeDraft('edited by hand', 'Q → A', 'Q → B')).toBe('Q → B\nedited by hand')
 })
 
-test('pressing options writes the question and the answer into the prompt box', async ($, on) => {
+test('pressing options writes the question and the answer into the prompt box', { options: { choiceButtons: true } }, async ($, on) => {
   const box = promptBox(on, 'and bump the version')
   await startSession($, on)
   const ui = await $.ui.mount(reply(ASK))
@@ -96,7 +97,7 @@ test('pressing options writes the question and the answer into the prompt box', 
   await ui.unmount()
 })
 
-test('a prompt box that refuses the text leaves the option unpicked and says so', async ($, on) => {
+test('a prompt box that refuses the text leaves the option unpicked and says so', { options: { choiceButtons: true } }, async ($, on) => {
   const box = promptBox(on, '', false)
   const toasts = recordToasts(on)
   await startSession($, on)
@@ -109,7 +110,7 @@ test('a prompt box that refuses the text leaves the option unpicked and says so'
   await ui.unmount()
 })
 
-test('sending a prompt forgets the picked options', async ($, on) => {
+test('sending a prompt forgets the picked options', { options: { choiceButtons: true } }, async ($, on) => {
   const box = promptBox(on)
   on('prompt.submit', (_, e) => ({ text: e.text, context: e.context }))
   await startSession($, on)
@@ -125,7 +126,7 @@ test('sending a prompt forgets the picked options', async ($, on) => {
   await ui.unmount()
 })
 
-test('choiceButtons off draws no option buttons and sends no note', { options: { choiceButtons: false } }, async ($, on) => {
+test('choiceButtons off, the default, draws no option buttons and sends no note', async ($, on) => {
   const seen: unknown[] = []
   mock.env(on, {})
   on('prompt.submit', (_, e) => {
@@ -140,7 +141,7 @@ test('choiceButtons off draws no option buttons and sends no note', { options: {
   await ui.unmount()
 })
 
-test('each prompt carries the note that asks for options as a list', async ($, on) => {
+test('each prompt carries the note that asks for options as a list', { options: { choiceButtons: true } }, async ($, on) => {
   const seen: unknown[] = []
   mock.env(on, {})
   on('prompt.submit', (_, e) => {

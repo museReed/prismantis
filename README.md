@@ -75,7 +75,7 @@ claude plugin install prismantis@prismantis
 | `theme` | `catppuccin-mocha` |
 | `claudeAvatar` | `robot`：Claude 標籤旁邊有一個會動的小機器人 |
 | `cellCopy` | 開啟：點表格格子的任一行，就複製整格內容，多行之間用一個空白連成一行 |
-| `choiceButtons` | 開啟：Claude 在問題底下列出的選項會變成按鈕，`- ( )` 是單選、`- [ ]` 是複選；點了會把「問題 → 選項」寫到輸入框最上面，你打的字留在下面，不會自動送出。說明見 [Choice buttons](#choice-buttons) |
+| `choiceButtons` | 關閉（要用再到 `/config` 打開）：打開後 Claude 在問題底下列出的選項會變成按鈕，`- ( )` 是單選、`- [ ]` 是複選；點了會把「問題 → 選項」寫到輸入框最上面，你打的字留在下面，不會自動送出。說明見 [Choice buttons](#choice-buttons) |
 | 第一次啟動 | 跳出一次提示，告訴你可以用 `/prismantis setup you`，之後不再出現 |
 
 要在自己的提問旁放上大頭照和名字，請看 [Your picture and name](#your-picture-and-name)：
@@ -345,7 +345,7 @@ Clicking works where the terminal passes clicks through, as fullscreen mode does
 
 ### Choice buttons
 
-With `choiceButtons` on (the default in this fork), the options Claude lists under a question are buttons. Each prompt carries a model-only note, about 130 tokens, that asks Claude to write them as a list right under the question:
+With `choiceButtons` on (off by default), the options Claude lists under a question are buttons. Each prompt carries a model-only note, about 130 tokens, that asks Claude to write them as a list right under the question:
 
 ```markdown
 Should the default branch change?
@@ -584,7 +584,7 @@ Options sit under `options`, keyed by the plugin's install name. Project setting
 | `unreadPrompts` | `true` (a prompt stays grey and blinks until the model starts on it), `false` | `false` |
 | `copyButtons` | `true`, `false` | `true` |
 | `cellCopy` | `true` (click a table body cell to copy it, a cell of several lines joined by spaces), `false` | `true` |
-| `choiceButtons` | `true` (options Claude lists under a question draw as buttons that write your answer into the prompt box, and each prompt carries a model-only note asking for options in that form), `false` | `true` |
+| `choiceButtons` | `true` (options Claude lists under a question draw as buttons that write your answer into the prompt box, and each prompt carries a model-only note asking for options in that form), `false` | `false` |
 | `copyButtonStyle` | `dim`, `inline`, `hover` | `dim` |
 | `textCopyButtons` | `true`, `false` | `true` |
 | `sectionCopyButtons` | `true`, `false` | `false` |

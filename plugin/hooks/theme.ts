@@ -175,7 +175,7 @@ export const resolveStyle = (options: PluginOptions): Style => {
     youAvatar: typeof options.youAvatar === 'string' ? options.youAvatar.trim() : '',
     diffLines: lineLimit(options.diffLines),
     cellCopy: options.cellCopy !== false,
-    choiceButtons: options.choiceButtons !== false,
+    choiceButtons: options.choiceButtons === true,
     youName: labelName(options.youName),
     claudeAvatar: pick(options.claudeAvatar, ['dot', 'robot'] as const, 'robot'),
     clock: pick(options.clock, ['off', '24h', '12h'] as const, 'off'),
