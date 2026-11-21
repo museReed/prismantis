@@ -25,6 +25,7 @@ declare module 'claude-code' {
       foundPaths: string[]
       awaiting: { key: string; at: number }[]
       blink: boolean
+      choices: { list: { id: string; group: string; one: boolean; question: string; label: string }[]; filled: string }
       drawn: StateFamily<number>
     }
   }

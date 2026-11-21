@@ -399,6 +399,7 @@ test('figure role markup outside a figure draws as its text in table cells and p
 test('the help screen shows every element prismantis draws', async () => {
   const blocks = parse(showcaseText(Object.keys(PRESETS)), hl)
   expect(showcaseText(Object.keys(PRESETS))).toContain('promptStyle')
+  expect(showcaseText(Object.keys(PRESETS))).toContain('- ( ) Keep this theme')
   expect(showcaseText(Object.keys(PRESETS))).toContain('`wide`')
   expect(showcaseText(Object.keys(PRESETS))).toContain('`replyStyle`')
   expect(showcaseText(Object.keys(PRESETS))).toContain('`You ⬤`')

@@ -30,7 +30,7 @@ export type Block = { raw: string } & (
   | { kind: 'notes'; notes: Note[] }
 )
 
-export type ListItem = { marker: string; depth: number; task?: boolean; inline: Inline[]; blocks?: Block[] }
+export type ListItem = { marker: string; depth: number; task?: boolean; choice?: true; inline: Inline[]; blocks?: Block[] }
 
 type Draft = Block extends infer B ? (B extends unknown ? Omit<B, 'raw'> : never) : never
 
@@ -267,6 +267,13 @@ export const texText = (tex: string): string =>
     .replace(/\)\(/g, ')·(')
     .replace(/ {2,}/g, ' ')
     .trim()
+
+const listEntry = (body: string): { text: string; marks: { task?: boolean; choice?: true } } => {
+  const task = /^\[([ xX])\]\s+(.*)$/.exec(body)
+  if (task) return { text: task[2]!, marks: { task: task[1] !== ' ' } }
+  const choice = /^\( \)\s+(.*)$/.exec(body)
+  return choice ? { text: choice[1]!, marks: { choice: true } } : { text: body, marks: {} }
+}
 
 export const inlineText = (inline: Inline[]): string =>
   inline.map(n => ('children' in n ? inlineText(n.children) : n.text)).join('')
@@ -549,9 +556,9 @@ const parseBlocks = (source: string, hl: Highlight, depth = 0): Block[] => {
         if (it) {
           const lead = indentOf(it[1] ?? '')
           contentIndent.push(lead + (it[2] ?? '').length + 1)
-          const task = /^\[([ xX])\]\s+(.*)$/.exec(it[3] ?? '')
-          texts.push([task ? task[2]! : it[3] ?? ''])
-          items.push({ marker: it[2] ?? '-', depth: Math.floor(lead / 2), ...(task ? { task: task[1] !== ' ' } : {}), inline: parseInline(texts.at(-1)![0]!, hl) })
+          const entry = listEntry(it[3] ?? '')
+          texts.push([entry.text])
+          items.push({ marker: it[2] ?? '-', depth: Math.floor(lead / 2), ...entry.marks, inline: parseInline(entry.text, hl) })
         } else if (/^\s{2,}\S/.test(at(i)) && items.length) {
           i = attachLine(lines, i, { items, contentIndent, texts }, hl, depth)
         } else {

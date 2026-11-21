@@ -75,6 +75,7 @@ claude plugin install prismantis@prismantis
 | `theme` | `catppuccin-mocha` |
 | `claudeAvatar` | `robot`：Claude 標籤旁邊有一個會動的小機器人 |
 | `cellCopy` | 開啟：點表格格子的任一行，就複製整格內容，多行之間用一個空白連成一行 |
+| `choiceButtons` | 開啟：Claude 在問題底下列出的選項會變成按鈕，`- ( )` 是單選、`- [ ]` 是複選；點了會把「問題 → 選項」寫到輸入框最上面，你打的字留在下面，不會自動送出。說明見 [Choice buttons](#choice-buttons) |
 | 第一次啟動 | 跳出一次提示，告訴你可以用 `/prismantis setup you`，之後不再出現 |
 
 要在自己的提問旁放上大頭照和名字，請看 [Your picture and name](#your-picture-and-name)：
@@ -342,6 +343,31 @@ sudo apt install -y copyq && copyq --start-server && copyq config autostart true
 
 Clicking works where the terminal passes clicks through, as fullscreen mode does. Terminals with copy-on-select, such as Warp, may grab the word "copy" instead.
 
+### Choice buttons
+
+With `choiceButtons` on (the default in this fork), the options Claude lists under a question are buttons. Each prompt carries a model-only note, about 130 tokens, that asks Claude to write them as a list right under the question:
+
+```markdown
+Should the default branch change?
+
+- ( ) Yes
+- ( ) No
+
+Which checks should run first?
+
+- [ ] Tests
+- [ ] Snapshots
+```
+
+`- ( )` options are one group: a press picks one and drops the others. `- [ ]` options toggle on their own. Each press rewrites the lines at the top of the prompt box, one per question, and keeps what you typed below them:
+
+```text
+Should the default branch change? → Yes
+Which checks should run first? → Tests, Snapshots
+```
+
+Nothing is sent until you press Enter, and sending a prompt clears the picks. The question is the list item above the options, or else the paragraph or heading just before the list. A press while a dialog covers the prompt box changes nothing and says so in a toast. `- [x]` items stay finished tasks and are not buttons.
+
 ### Tool rows
 
 ![Tool rows: plain Claude Code on the left, prismantis on the right](docs/compare/tools.png)
@@ -558,6 +584,7 @@ Options sit under `options`, keyed by the plugin's install name. Project setting
 | `unreadPrompts` | `true` (a prompt stays grey and blinks until the model starts on it), `false` | `false` |
 | `copyButtons` | `true`, `false` | `true` |
 | `cellCopy` | `true` (click a table body cell to copy it, a cell of several lines joined by spaces), `false` | `true` |
+| `choiceButtons` | `true` (options Claude lists under a question draw as buttons that write your answer into the prompt box, and each prompt carries a model-only note asking for options in that form), `false` | `true` |
 | `copyButtonStyle` | `dim`, `inline`, `hover` | `dim` |
 | `textCopyButtons` | `true`, `false` | `true` |
 | `sectionCopyButtons` | `true`, `false` | `false` |
@@ -641,10 +668,10 @@ No network calls. The programs it runs, the files it reads and the settings it w
 
 To change the code, read [AGENTS.md](AGENTS.md) instead.
 
-- **What it is:** a Claude Code mod (function hooks in TypeScript) that redraws assistant replies, slash-command output, tool rows, the turn footer and user prompts. It changes how things look, and with `diagramHints` on (the default) it also asks Claude to build a reply around pictures when they make it easier to grasp, with the core on the first screen as a picture or a sentence. What it sends the model is the optional notes below: the diagram hint, the issue hint and, with `keyPointHint` on, the key points note.
+- **What it is:** a Claude Code mod (function hooks in TypeScript) that redraws assistant replies, slash-command output, tool rows, the turn footer and user prompts. It changes how things look, and with `diagramHints` on (the default) it also asks Claude to build a reply around pictures when they make it easier to grasp, with the core on the first screen as a picture or a sentence. What it sends the model is the optional notes below: the diagram hint, the issue hint, with `keyPointHint` on, the key points note and, with `choiceButtons` on, the choice note. A press on a choice button writes text into your prompt box and sends nothing.
 - **Install:** `/plugin marketplace add NahumLitvin/prismantis`, then `/plugin install prismantis@prismantis`. Needs Claude Code 2.1.287+. Changes apply after `/reload`.
 - **Configure:** `/prismantis theme <name>` and `/prismantis setup` set options at runtime. Every option is a key under `pluginConfigs["prismantis@prismantis"].options` in `~/.claude/settings.json` (or a row in `/config`), then `/reload`. Options and defaults are in the [Configure](#configure) table; the machine-readable source is `userConfig` in [.claude-plugin/plugin.json](plugin/.claude-plugin/plugin.json). Color values that don't parse are ignored.
-- **Side effects:** no network. Programs it runs: the `🌐 html` and `📸 png` clipboard helper (`/usr/bin/osascript` on macOS, `powershell.exe` on Windows, `copyq` on Linux for `🌐 html` only, 5 second timeout, 15 on Windows, only on a click), and `ratex-render` while `latex` is on. With `diagramHints` on, it adds about 630 tokens of model-only context (about 710 while `latex` is on) to each prompt you type and each prompt another plugin sends, as broken down under [Diagram hints](#diagram-hints). With `keyPointHint` on, it adds about 80 more.
+- **Side effects:** no network. Programs it runs: the `🌐 html` and `📸 png` clipboard helper (`/usr/bin/osascript` on macOS, `powershell.exe` on Windows, `copyq` on Linux for `🌐 html` only, 5 second timeout, 15 on Windows, only on a click), and `ratex-render` while `latex` is on. With `diagramHints` on, it adds about 630 tokens of model-only context (about 710 while `latex` is on) to each prompt you type and each prompt another plugin sends, as broken down under [Diagram hints](#diagram-hints). With `keyPointHint` on, it adds about 80 more, and with `choiceButtons` on about 130 more.
 - **Turning it off:** `"enabled": false`, or disable the plugin in `/plugin`. To keep it in one app only, like the terminal but not the desktop app, set `"surfaces": "terminal"`.
 - **For other mods:** `$.prismantis.markdown({ surface, text, columns })`, typed in [plugin/types/index.d.ts](plugin/types/index.d.ts). See [Other mods](#other-mods).
 
