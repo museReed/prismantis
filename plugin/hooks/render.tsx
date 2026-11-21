@@ -1,7 +1,5 @@
 import type { ElementTable, Elements, RenderElement, RenderNode, TextHoverProps } from 'claude-code'
 
-import type { Choice } from './choices'
-import { choiceOf, isChoice } from './choices'
 import type { Ink } from './clipboard'
 import { figureText, isFigureLang } from './figure'
 import { tableHtml, tableText } from './html'
@@ -1281,7 +1279,7 @@ const leadInline = (blocks: Block[]): Inline[] => {
 }
 
 const renderNested = (el: ElementTable, style: Style, blocks: Block[], columns: number, key: string, copy?: CopyButton, fold?: Fold, tip?: Tip) =>
-  renderBlocks(el, style, blocks, columns, drawMath(el, style, blocks), copy && Object.assign((text: string | (() => string), id: string, label?: string, html?: (() => string) | 'png') => copy(text, `${key}.${id}`, label, html), { cell: copy.cell && ((text: string, id: string, shown: RenderElement) => copy.cell!(text, `${key}.${id}`, shown)), choose: copy.choose && { ...copy.choose, scope: `${copy.choose.scope}/${key}` } }), fold && ((id, hidden, k) => fold(id, hidden, `${key}.${k}`)), tip)
+  renderBlocks(el, style, blocks, columns, drawMath(el, style, blocks), copy && Object.assign((text: string | (() => string), id: string, label?: string, html?: (() => string) | 'png') => copy(text, `${key}.${id}`, label, html), { cell: copy.cell && ((text: string, id: string, shown: RenderElement) => copy.cell!(text, `${key}.${id}`, shown)) }), fold && ((id, hidden, k) => fold(id, hidden, `${key}.${k}`)), tip)
 
 const quoteBar = (el: ElementTable, text: string, color: string | undefined, lines: number) =>
   lines <= 1 ? <el.Text color={color}>{text}</el.Text> : clip(el, width(text), <el.Text color={color}>{Array.from({ length: lines }, () => text).join('\n')}</el.Text>)
@@ -1398,46 +1396,14 @@ const listRow = (el: ElementTable, style: Style, item: Extract<Block, { kind: 'l
 
 const TASK_GLYPHS = { checks: ['[ ]', '[✓]'], ticks: ['○', '✓'], box: ['□', '✓'], progress: ['○', '✓'] } as const
 
-const leadText = (block: Block | undefined): string => (block?.kind === 'paragraph' || block?.kind === 'heading' ? inlineText(block.inline) : '')
-
-const CHOICE_GLYPHS = ['○', '●'] as const
-
-const choiceLook = (style: Style, choose: Choose | undefined, block: Extract<Block, { kind: 'list' }>, i: number, key: string, lead: string) => {
-  const item = block.items[i]!
-  if (!choose || !isChoice(item)) return undefined
-  const pick = choiceOf(block.items, i, `${choose.scope}:${key}`, lead)
-  const on = choose.has(pick.id)
-  const glyph = item.choice ? CHOICE_GLYPHS[on ? 1 : 0] : TASK_GLYPHS[style.taskStyle][on ? 1 : 0]
-  return { pick, glyph, color: on ? style.theme.accent : style.theme.bullet, look: { ...(on ? { bold: true } : {}), ...prose(style) } }
-}
-
-const itemFace = (style: Style, item: Extract<Block, { kind: 'list' }>['items'][number]): { glyph: string; color: string | undefined; look: TextLook } => {
-  const strike = style.taskStyle === 'checks' || style.taskStyle === 'box'
-  const tick = style.taskStyle === 'ticks' || style.taskStyle === 'progress'
-  return {
-    glyph: item.task !== undefined ? TASK_GLYPHS[style.taskStyle][item.task ? 1 : 0] : bulletOf(style, item),
-    color: item.task && tick ? style.theme.accent : style.theme.bullet,
-    look: { ...(item.task === true ? { dimColor: true, strikethrough: strike } : {}), ...prose(style) },
-  }
-}
-
-const choiceRow = (el: ElementTable, style: Style, item: Extract<Block, { kind: 'list' }>['items'][number], chosen: NonNullable<ReturnType<typeof choiceLook>>, choose: Choose, k: string) => {
-  const { Box, Text } = el
-  const rich = <Text key={`${k}.t`} {...chosen.look}>{renderInline(el, style, item.inline, k)}</Text>
-  const label = textOnly(rich) ? rich : <Text key={`${k}.t`} {...chosen.look}>{inlineText(item.inline)}</Text>
-  return (
-    <Box key={k} flexDirection="row" paddingLeft={item.depth * 2}>
-      {choose.button(chosen.pick, [<Text key={`${k}.g`} color={chosen.color}>{`${chosen.glyph} `}</Text>, label])}
-    </Box>
-  )
-}
-
-const renderList = (el: ElementTable, style: Style, block: Extract<Block, { kind: 'list' }>, columns: number, key: string, copy?: CopyButton, fold?: Fold, tip?: Tip, lead = '') => {
+const renderList = (el: ElementTable, style: Style, block: Extract<Block, { kind: 'list' }>, columns: number, key: string, copy?: CopyButton, fold?: Fold, tip?: Tip) => {
   const { Box, Text } = el
   const t = style.theme
   const tasks = block.items.filter(item => item.task !== undefined)
   const done = tasks.filter(item => item.task).length
   const filled = tasks.length ? Math.round((done / tasks.length) * 20) : 0
+  const strike = style.taskStyle === 'checks' || style.taskStyle === 'box'
+  const tick = style.taskStyle === 'ticks' || style.taskStyle === 'progress'
   const side = listSide(style, block)
   return (
     <Box key={key} flexDirection="column">
@@ -1451,10 +1417,11 @@ const renderList = (el: ElementTable, style: Style, block: Extract<Block, { kind
       {block.items.map((full, i) => {
         const item = { ...full, depth: Math.min(full.depth, Math.floor(columns / 4)) }
         const k = `${key}.${i}`
-        const chosen = choiceLook(style, copy?.choose, block, i, key, lead)
-        const face = chosen ?? itemFace(style, item)
-        const pad = item.depth * 2 + face.glyph.length + 1
-        const row = chosen ? choiceRow(el, style, item, chosen, copy!.choose!, k) : listRow(el, style, item, face.glyph, face.color, side, columns - pad, k, face.look, tip)
+        const glyph = item.task !== undefined ? TASK_GLYPHS[style.taskStyle][item.task ? 1 : 0] : bulletOf(style, item)
+        const glyphColor = item.task && tick ? t.accent : t.bullet
+        const pad = item.depth * 2 + glyph.length + 1
+        const look = { ...(item.task === true ? { dimColor: true, strikethrough: strike } : {}), ...prose(style) }
+        const row = listRow(el, style, item, glyph, glyphColor, side, columns - pad, k, look, tip)
         if (!item.blocks) return row
         return (
           <Box key={k} flexDirection="column">
@@ -1469,9 +1436,7 @@ const renderList = (el: ElementTable, style: Style, block: Extract<Block, { kind
 
 export type CellCopy = (text: string, key: string, shown: RenderElement) => RenderElement
 
-export type Choose = { scope: string; has: (id: string) => boolean; button: (choice: Choice, shown: RenderElement[]) => RenderElement }
-
-export type CopyButton = ((text: string | (() => string), key: string, label?: string, rich?: (() => string) | 'png', hues?: () => Hues) => RenderElement | null) & { cell?: CellCopy; choose?: Choose }
+export type CopyButton = ((text: string | (() => string), key: string, label?: string, rich?: (() => string) | 'png', hues?: () => Hues) => RenderElement | null) & { cell?: CellCopy }
 export type Hues = Ink[][]
 export type Drawn = Map<number, { element?: RenderElement; art?: string; hues?: () => Hues; note?: string }>
 export type FoldLook = { label?: string; face?: (folded: boolean) => RenderElement }
@@ -1663,7 +1628,7 @@ export const renderBlocks = (el: ElementTable, style: Style, blocks: Block[], co
         )
       }
       case 'list':
-        return renderList(el, style, block, room(b), key, copy, fold, tip, leadText(shown[b - 1]))
+        return renderList(el, style, block, room(b), key, copy, fold, tip)
       case 'table':
         return renderTable(el, style, block, room(b), key, rtlTables[b]!, tip, copy?.cell)
       case 'notes':

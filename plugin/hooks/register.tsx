@@ -10,9 +10,7 @@ import type { ClipboardBackend, HelperCommand } from './clipboard'
 import { clipboardCommand, drawsImages, imageCommand } from './clipboard'
 import { FIGURE_HINT } from './figure'
 import { drawDiagrams } from './mermaid'
-import type { CellCopy, Choose, CopyButton, DrawPaste, Fold, Hues, TerminalEnv } from './render'
-import type { Choice, Choices } from './choices'
-import { CHOICE_HINT, CHOICE_REFUSED, NO_CHOICES, choiceDraft, mergeDraft, toggleChoice } from './choices'
+import type { CellCopy, CopyButton, DrawPaste, Fold, Hues, TerminalEnv } from './render'
 import { MARK, bashEdits, lineCount, drawMath, drawsHyperlinks, editNotes, fileLinkRoot, fileRoot, hasShellOutput, instanceKey, isReadOnlyCall, leftToEngine, markerRoom, mirrored, noteTip, pasteLang, pathsToProbe, toolPathsToProbe, remember, rememberCall, renderBashEdits, renderBlocks, renderDiffCard, renderExpandedCall, renderFailure, renderReply, renderShellResult, renderToolGroup, renderToolRow, renderTurnDuration, renderUserPrompt, replyRoom, replyStyleFor, takesClickableMarks, takesEditorLinks, takesHttpLinks, takesMonoText, withoutBashEdits } from './render'
 import type { SetupStep } from './help'
 import { ESSENTIAL_STEPS, HINT, ISSUE_HINT, KEY_POINT_HINT, NARROW_PANE, narrowHint, SETUP_DONE, SETUP_ESSENTIALS_DONE, SETUP_MORE, SETUP_PANE_KEYS, SETUP_PANE_OPENED, THEME_PREVIEW, findSetup, helpText, parseYouArgs, YOU_HINT, youSetupText, languageShowcase, rtlShowcaseText, setupParts, setupSteps, setupText, showcaseText } from './help'
@@ -83,7 +81,6 @@ const setupLand = atom({ plugin: 'prismantis', key: 'setupLand' } as const, '')
 const foundPaths = atom({ plugin: 'prismantis', key: 'foundPaths' } as const, [])
 const awaiting = atom({ plugin: 'prismantis', key: 'awaiting' } as const, [] as { key: string; at: number }[])
 const blink = atom({ plugin: 'prismantis', key: 'blink' } as const, false)
-const choices = atom({ plugin: 'prismantis', key: 'choices' } as const, NO_CHOICES)
 const BLINK_MS = 500
 const HELD_TURNS = 2
 type Blinker = { timer?: ReturnType<EngineInterface['clock']['every']>; tools: number; ready: Set<string>; held: Map<string, number> }
@@ -521,41 +518,7 @@ const cellCopier = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['re
   )
 }
 
-const pressChoice = async ($: EngineInterface, choice: Choice) => {
-  const held = await read($, choices)
-  const list = toggleChoice(held.list, choice)
-  const filled = choiceDraft(list)
-  const box = await $.prompt.read()
-  const done = await $.prompt.fill({ text: mergeDraft(box.text, held.filled, filled), mode: 'replace' })
-  if (!done.isFilled) {
-    $.ui.toast(CHOICE_REFUSED)
-    return
-  }
-  await update($, choices, () => ({ list, filled }))
-}
-
-const heldChoices = async ($: EngineInterface, style: Style): Promise<Choices | undefined> => (style.choiceButtons ? read($, choices) : undefined)
-
-const forgetChoices = async ($: EngineInterface, style: Style, origin: PromptOrigin) => {
-  if (!style.choiceButtons || origin.kind !== 'composer') return
-  if ((await read($, choices)).list.length) await update($, choices, () => NO_CHOICES)
-}
-
-const chooser = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['resolve']>, scope: string, held: Choices): Choose => {
-  const { Button } = el
-  const ids = new Set(held.list.map(c => c.id))
-  return {
-    scope,
-    has: id => ids.has(id),
-    button: (choice, shown) => (
-      <Button key={`pick.${choice.id}`} plain onPress={() => { void pressChoice($, choice).catch(() => undefined) }}>
-        {shown}
-      </Button>
-    ),
-  }
-}
-
-const drawMarkdown = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['resolve']>, style: Style, blocks: ReturnType<typeof parse>, columns: number, math: Map<number, Typeset> = new Map(), pictures: Map<number, Picture> = new Map(), reply?: string, open?: string[], notes?: { id: string; press: boolean; choices?: Choices | undefined }): RenderElement[] => {
+const drawMarkdown = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['resolve']>, style: Style, blocks: ReturnType<typeof parse>, columns: number, math: Map<number, Typeset> = new Map(), pictures: Map<number, Picture> = new Map(), reply?: string, open?: string[], notes?: { id: string; press: boolean }): RenderElement[] => {
   const { Button } = el
   const copy: CopyButton = (text: string | (() => string), key: string, label = '📋 copy', rich?: (() => string) | 'png', hues?: () => Hues) => {
     const copied = (surface: RenderSurface) => lastCopy(() => copyNow($, style, typeof text === 'function' ? text() : text, surface, rich, hues?.()))
@@ -572,7 +535,6 @@ const drawMarkdown = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['
     ) : null
   }
   copy.cell = cellCopier($, el, style)
-  if (notes?.choices) copy.choose = chooser($, el, instanceKey(notes.id), notes.choices)
   const drawn = drawDiagrams(el, style, blocks, columns - markerRoom(style))
   const Image = 'Image' in el ? el.Image : null
   if (Image) {
@@ -912,7 +874,6 @@ const drawSetup = ($: EngineInterface, el: ReturnType<EngineInterface['ui']['res
 const hintsFor = (style: Style, latex: LatexSession, nth: number, pane?: number): string[] => [
   ...(style.diagramHints ? [HINT, FIGURE_HINT, ...(pane !== undefined && pane < NARROW_PANE ? [narrowHint(pane)] : []), ...(latex.ready && !latex.stopped ? [LATEX_HINT] : [])] : []),
   ...(style.keyPointHint ? [KEY_POINT_HINT] : []),
-  ...(style.choiceButtons ? [CHOICE_HINT] : []),
   ...(style.issueHint && nth % 10 === 0 ? [ISSUE_HINT] : []),
 ]
 
@@ -1095,7 +1056,6 @@ export const register: Register = (on, options) => {
 
   on('prompt.submit', async ($, e, next) => {
     await markUnread($, style, e, blinker)
-    await forgetChoices($, style, e.origin)
     if (style.clock !== 'off' && (e.origin.kind === 'composer' || e.origin.kind === 'bridge')) {
       const at = await $.clock.now()
       await persist($, () => update($, sent, list => withRecord(list, { text: promptKey(e.text), at })))
@@ -1203,12 +1163,11 @@ export const register: Register = (on, options) => {
     const pictures = await picturesOf($, style, probes, e.surface, blocks)
     const surfaceStyle = { ...(await withFoundPaths($, pathChecks, forSurface(style, e, reach), blocks)), images: await imagesOn($, probes, e.surface) }
     const open = await read($, unfolded)
-    const held = await heldChoices($, style)
     const reply = blocks.length > 1 || hasRtl(e.props.text) ? e.props.text : undefined
     const corner = reply !== undefined && markerRoom(surfaceStyle) > 0
     const columns = columnsOf(e.viewport, surfaceStyle)
     const framed = replyStyleFor(surfaceStyle, e.props.text)
-    const drawn = drawMarkdown($, el, narration ? { ...framed, narration } : framed, blocks, columns - replyRoom(framed), math, pictures, reply, open, { id: e.requestId, press: reach.marks, choices: held })
+    const drawn = drawMarkdown($, el, narration ? { ...framed, narration } : framed, blocks, columns - replyRoom(framed), math, pictures, reply, open, { id: e.requestId, press: reach.marks })
     return renderReply(el, framed, drawn, e.props.isFirstOfReply === true, columns, corner)
   })
 

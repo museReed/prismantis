@@ -3578,7 +3578,7 @@ test('issueHint off leaves the issue hint out', { options: { issueHint: false } 
   expect(seen[0]?.includes(ISSUE_HINT) ?? false).toBe(false)
 })
 
-test('with diagram hints off, the issue hint still goes out alone', { options: { diagramHints: false, choiceButtons: false } }, async ($, on) => {
+test('with diagram hints off, the issue hint still goes out alone', { options: { diagramHints: false } }, async ($, on) => {
   const seen: (readonly string[] | undefined)[] = []
   mock.env(on, {})
   on('prompt.submit', (_, e) => {
@@ -3600,7 +3600,7 @@ test('the key point hint stays out by default', async ($, on) => {
   expect(seen[0]?.includes(KEY_POINT_HINT) ?? false).toBe(false)
 })
 
-test('keyPointHint on adds the key point hint to every prompt, also with diagram hints off', { options: { keyPointHint: true, diagramHints: false, choiceButtons: false } }, async ($, on) => {
+test('keyPointHint on adds the key point hint to every prompt, also with diagram hints off', { options: { keyPointHint: true, diagramHints: false } }, async ($, on) => {
   const seen: (readonly string[] | undefined)[] = []
   mock.env(on, {})
   on('prompt.submit', (_, e) => {
